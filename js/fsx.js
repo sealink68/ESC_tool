@@ -53,11 +53,25 @@
   function reEsc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
   /* Parameter files of this dossier: <Family>_<anything>_<Dossier>_<YYYY-MM-DD_HHMM>[.ext]; the sub-model part is free
      so files saved under an earlier sub-model choice of the same dossier also count. Newest first. */
+  /* Retention groups: extension, case-insensitive (".XML" == ".xml"); no extension = own group "". */
+  F.extKey = function (name) { return F.ext(name).toLowerCase(); };
+  /* [{ext, files:[newest first]}], groups ordered by their newest file. */
+  F.groups = function (files) {
+    var g = {}, order = [];
+    (files || []).forEach(function (f) { var k = f.ext != null ? f.ext : F.extKey(f.name); if (!g[k]) { g[k] = []; order.push(k); } g[k].push(f); });
+    return order.map(function (k) { return { ext: k, files: g[k] }; });
+  };
+  /* Keep max KEEP per extension group; returns {keep, drop} (input newest first). */
+  F.retain = function (files) {
+    var n = {}, keep = [], drop = [];
+    files.forEach(function (f) { var k = F.extKey(f.name); n[k] = (n[k] || 0) + 1; (n[k] > C.KEEP ? drop : keep).push(f); });
+    return { keep: keep, drop: drop };
+  };
   F.listParams = function (dir, fam, dos) {
     var re = new RegExp("^" + reEsc(OE.safeName(fam, true)) + "_.+_" + reEsc(OE.safeName(dos)) + "_(\\d{4}-\\d\\d-\\d\\d_\\d{4})(\\.[^.]+)?$");
     var out = [];
     return (async function () {
-      for await (var e of dir.values()) { if (e.kind === "file") { var m = re.exec(e.name); if (m) out.push({ name: e.name, stamp: m[1] }); } }
+      for await (var e of dir.values()) { if (e.kind === "file") { var m = re.exec(e.name); if (m) out.push({ name: e.name, stamp: m[1], ext: F.extKey(e.name) }); } }
       out.sort(function (a, b) { return a.stamp < b.stamp ? 1 : a.stamp > b.stamp ? -1 : (a.name < b.name ? 1 : -1); });
       return out;
     })();
@@ -78,13 +92,39 @@
       .then(function (fh) { return fh.getFile(); }).then(function (f) { return f.text(); }).then(JSON.parse)
       .catch(function () { return null; });
   };
+  /* All existing dossiers: projecten/<Family>/<Dossier>/ -> _esc_info.json if present, else folder name + newest
+     parameter file. Newest first. */
+  F.scan = function () {
+    var out = [], STAMP = /_(\d{4}-\d\d-\d\d_\d{4})(\.[^.]+)?$/;
+    function toIso(st) { var m = /^(\d{4})-(\d\d)-(\d\d)_(\d\d)(\d\d)$/.exec(st || ""); return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]).toISOString() : ""; }
+    return (async function () {
+      for await (var fd of F.root.values()) {
+        if (fd.kind !== "directory") continue;
+        for await (var dd of fd.values()) {
+          if (dd.kind !== "directory") continue;
+          var meta = null, files = [];
+          try { meta = JSON.parse(await (await (await dd.getFileHandle(C.META)).getFile()).text()); } catch (e) { meta = null; }
+          try { files = await F.listParams(dd, fd.name, dd.name); } catch (e) { files = []; }
+          if (!files.length) { // fall back: any file with a timestamp in the name
+            for await (var e of dd.values()) { var m = e.kind === "file" && STAMP.exec(e.name); if (m) files.push({ name: e.name, stamp: m[1], ext: F.extKey(e.name) }); }
+            files.sort(function (a, b) { return a.stamp < b.stamp ? 1 : -1; });
+          }
+          var m2 = meta || {};
+          out.push({ family: fd.name, folder: dd.name, dossier: m2.dossierInput || m2.dossier || dd.name, sub: m2.submodel || "", serial: m2.serial || "", order: m2.order || "",
+            updated: m2.updated || toIso(files[0] && files[0].stamp), files: F.retain(files).keep, meta: !!meta });
+        }
+      }
+      out.sort(function (a, b) { return a.updated < b.updated ? 1 : a.updated > b.updated ? -1 : 0; });
+      return out;
+    })();
+  };
   /* Which file(s) would be removed if a new one named `name` is added. */
   F.wouldDelete = function (fam, dos, name) {
     return F.dossierDir(fam, dos, false).then(function (d) { return F.listParams(d, fam, dos); }, function () { return []; }).then(function (l) {
       var st = /_(\d{4}-\d\d-\d\d_\d{4})(\.[^.]+)?$/.exec(name)[1];
       var all = l.filter(function (f) { return f.name !== name; }).concat([{ name: name, stamp: st }]);
       all.sort(function (a, b) { return a.stamp < b.stamp ? 1 : a.stamp > b.stamp ? -1 : (a.name < b.name ? 1 : -1); });
-      return all.slice(C.KEEP).map(function (f) { return f.name; });
+      return F.retain(all).drop.map(function (f) { return f.name; });
     });
   };
 })(window.OE);

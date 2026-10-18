@@ -118,17 +118,103 @@
   function descOf(m) { var d = m.desc || {}; return typeof d === "string" ? d : (d[OE.S.lang] || d.nl || d.en || ""); }
   function exampleFor(fam) { var l = OE.MODELS[fam] || []; for (var i = 0; i < l.length; i++) if (l[i].img && !l[i].example) return l[i].img; return null; }
 
+  /* ---------- existing-dossier search (cached scan of the projecten folder) ---------- */
+  function scan(force) {
+    if (mem.scanP && !force) return mem.scanP;
+    mem.scanErr = null; if (force) mem.dossiers = null;
+    var p = mem.scanP = OE.fs.scan().then(function (l) { if (mem.scanP === p) mem.dossiers = l; }, function (e) {
+      if (mem.scanP !== p) return; mem.dossiers = []; mem.scanErr = e;
+      if (e && (e.name === "NotAllowedError" || e.name === "SecurityError")) OE.fs.state = "prompt";
+    }).then(function () { if (mem.scanP === p && OE.S.screen === "form") drawSearch(); });
+    return p;
+  }
+  OE.rescan = function () { mem.scanP = null; return scan(true); };
+  function hay(d) { return [d.dossier, d.folder, d.family, d.sub, d.serial, d.order].join(" ").toLowerCase(); }
+  function filtered() {
+    var q = (mem.dq || "").toLowerCase().trim().split(/\s+/).filter(Boolean);
+    return (mem.dossiers || []).filter(function (d) { var h = hay(d); return q.every(function (w) { return h.indexOf(w) >= 0; }); });
+  }
+  function dDate(d) { return d.updated ? OE.human(new Date(d.updated)) : "—"; }
+  function drawSearch() {
+    var x = OE.t(), el = $("srch"); if (!el) return;
+    if (mem.sel) {
+      var d = mem.sel;
+      el.innerHTML = '<div class="wosel" id="dsel"><span>✓ <b>' + esc(d.dossier) + "</b><small>" + esc(d.family + (d.sub ? " / " + d.sub : "") + (d.serial ? " · " + d.serial : "") + " · " + x.updatedAt + " " + dDate(d)) + "</small></span>" +
+        '<button id="newDos" type="button">✚ ' + x.newDos + "</button></div>";
+      OE.bind("newDos", resetForm); return;
+    }
+    var head = '<div class="srow"><label class="lbl" for="dq">🔎 ' + x.srchH + '</label><span class="scount" id="dcount"></span><button class="small" id="drl" type="button">' + x.srchRefresh + "</button></div>";
+    if (OE.fs.state === "prompt") {
+      el.innerHTML = head + '<div class="err">' + esc(x.folderRenewP) + '</div><button class="btn pri big" id="srenew">' + x.folderRenew + "</button>";
+      OE.bind("srenew", function () { OE.fs.renew().then(function () { OE.rescan(); drawSearch(); }, function () {}); });
+      OE.bind("drl", function () { OE.rescan(); drawSearch(); }); return;
+    }
+    el.innerHTML = head + '<input id="dq" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-controls="dlist" aria-expanded="true" placeholder="' + esc(x.srchPh) + '">' +
+      '<div class="wolist dlist" id="dlist" role="listbox"></div>';
+    var q = $("dq"); q.value = mem.dq || "";
+    q.oninput = function () { mem.dq = q.value; mem.di = 0; drawItems(); };
+    q.onkeydown = function (e) {
+      var n = $("dlist").querySelectorAll("[data-i]").length;
+      if (e.key === "ArrowDown") { e.preventDefault(); mem.di = Math.min(n - 1, (mem.di || 0) + 1); hl(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); mem.di = Math.max(0, (mem.di || 0) - 1); hl(); }
+      else if (e.key === "Enter") { e.preventDefault(); var b = $("dlist").querySelectorAll("[data-i]")[mem.di || 0]; if (b) b.click(); }
+    };
+    OE.bind("drl", function () { OE.rescan(); drawSearch(); });
+    drawItems();
+  }
+  function hl() {
+    [].forEach.call($("dlist").querySelectorAll("[data-i]"), function (b, i) { var on = i === (mem.di || 0); b.classList.toggle("on", on); b.setAttribute("aria-selected", on); if (on) b.scrollIntoView({ block: "nearest" }); });
+  }
+  function drawItems() {
+    var x = OE.t(), box = $("dlist"); if (!box) return;
+    if (!mem.dossiers) { box.innerHTML = '<div class="load"><div class="spin"></div>' + x.srchLoading + "</div>"; $("dcount").textContent = ""; return; }
+    var l = filtered(); $("dcount").textContent = OE.fmt(x.srchCount, { n: l.length + (l.length !== mem.dossiers.length ? "/" + mem.dossiers.length : "") });
+    if (mem.scanErr) { box.innerHTML = '<p class="hint wohint">' + esc(x.srchErr) + "</p>"; return; }
+    if (!l.length) { box.innerHTML = '<p class="hint wohint">' + (mem.dossiers.length ? x.srchNoHit : x.srchNone) + "</p>"; return; }
+    box.innerHTML = l.map(function (d, i) {
+      return '<button type="button" role="option" data-i="' + i + '"><span><b>' + esc(d.dossier) + "</b><small>" + esc(d.family + (d.sub ? " / " + d.sub : "")) + (d.serial ? " · S/N " + esc(d.serial) : "") + (d.order ? " · " + esc(d.order) : "") + "</small></span><small>" + esc(dDate(d)) + "</small></button>";
+    }).join("");
+    [].forEach.call(box.querySelectorAll("[data-i]"), function (b) {
+      b.onmousedown = function (e) { e.preventDefault(); };
+      b.onclick = function () { pick(l[+b.dataset.i]); };
+    });
+    hl();
+  }
+  function pick(d) {
+    var f = mem.form, fams = OE.MODELS;
+    if (fams[d.family]) { f.fam = d.family; f.famOther = ""; } else { f.fam = C.OTHER; f.famOther = d.family; }
+    var subs = fams[f.fam] || [];
+    if (!d.sub) f.sub = ""; else if (subs.some(function (s) { return s.id === d.sub; })) { f.sub = d.sub; f.subOther = ""; } else { f.sub = C.OTHER; f.subOther = d.sub; }
+    f.dossier = OE.safeName(d.dossier) === d.folder ? d.dossier : d.folder;
+    f.serial = d.serial; f.order = d.order; mem.sel = d; mem.dq = "";
+    SC.form();
+    var fi = $("file"); if (fi) try { $("drop").focus(); } catch (e) {}
+  }
+  function resetForm() { mem.form = blank(); mem.sel = null; mem.dq = ""; SC.form(); var q = $("dq"); if (q) q.focus(); }
+  /* Parameter files grouped per extension, newest of each group marked active. */
+  function groupedHtml(x, files, bold) {
+    return OE.fs.groups(files).map(function (g) {
+      return '<div class="xg"><span class="xgh">' + esc(g.ext || x.noExt) + ' <small>(' + g.files.length + "/" + C.KEEP + ')</small></span><ul class="res">' + g.files.map(function (f, i) {
+        return "<li>" + (i === 0 ? '<span class="badge g">' + x.active + "</span> " : "") + (bold ? "<b>" + esc(f.name) + "</b>" : esc(f.name)) + "<em>" + OE.stampHuman(f.stamp) + "</em></li>"; }).join("") + "</ul></div>";
+    }).join("");
+  }
+  OE.groupedHtml = groupedHtml;
+  function exFilesHtml(x, files) {
+    if (!files || !files.length) return "";
+    return '<div class="exf" id="exFiles"><b>' + x.exFiles + "</b>" + groupedHtml(x, files) + "</div>";
+  }
+
   SC.form = function () {
     var x = OE.t(), f = mem.form, fams = Object.keys(OE.MODELS);
     var famOpts = '<option value="">' + x.choose + "</option>" + fams.map(function (k) { return '<option value="' + esc(k) + '">' + esc(k) + "</option>"; }).join("") + '<option value="' + C.OTHER + '">' + x.other + "</option>";
-    $("card").innerHTML = '<h2 class="q">' + x.formH + '</h2><div class="grid"><div class="col">' +
+    $("card").innerHTML = '<h2 class="q">' + x.formH + '</h2><div class="srch" id="srch"></div><div class="grid"><div class="col">' +
       '<label class="lbl" for="fam">' + x.family + ' *</label><select id="fam">' + famOpts + '</select><input id="famO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
       '<label class="lbl" for="sub">' + x.sub + ' *</label><select id="sub"></select><input id="subO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
       '<label class="lbl" for="dos">' + x.dossier + ' *</label><input id="dos" autocomplete="off" spellcheck="false" placeholder="' + esc(x.dossierPh) + '"><p class="hint" id="dosN"></p>' +
       '<div id="exist"></div>' +
       '<div class="two"><div><div class="lblrow"><label class="lbl" for="ser">' + x.serial + ' *</label>' + INFO(x) + '</div><input id="ser" autocomplete="off" spellcheck="false"></div>' +
       '<div><div class="lblrow"><label class="lbl" for="ord">' + x.order + ' *</label>' + INFO(x) + '</div><input id="ord" autocomplete="off" spellcheck="false"></div></div>' +
-      '<label class="lbl" for="file">' + x.file + ' *</label><label class="drop" id="drop"><input type="file" id="file"><span id="fileT"></span></label>' +
+      (mem.sel ? exFilesHtml(x, mem.sel.files) : "") + '<label class="lbl" for="file">' + x.file + ' *</label><label class="drop" id="drop"><input type="file" id="file"><span id="fileT"></span></label>' +
       '<label class="lbl">' + x.dateNow + '</label><div class="now" id="now"></div>' +
       '</div><div class="col side"><figure class="prod" id="prod"></figure><p class="hint" id="pathP"></p></div></div>' +
       '<div id="err"></div><div class="btns"><button class="btn pri" id="save">' + x.save + "</button></div>";
@@ -164,18 +250,19 @@
         OE.bind("load", function () {
           f.serial = m.serial || ""; f.order = m.order || ""; $("ser").value = f.serial; $("ord").value = f.order;
           if (m.submodel) { var l = OE.MODELS[f.fam] || []; if (l.some(function (s) { return s.id === m.submodel; })) f.sub = m.submodel; else { f.sub = C.OTHER; f.subOther = m.submodel; $("subO").value = f.subOther; } sub.value = f.sub; }
-          $("exist").innerHTML = '<div class="okmsg" id="loaded">✓ ' + x.loaded + "</div>"; upd();
+          $("exist").innerHTML = '<div class="okmsg" id="loaded">✓ ' + x.loaded + "</div>" + exFilesHtml(x, m.files); upd();
         });
       });
     }
     mem.lastCheck = null; fam.value = f.fam; fillSubs();
     $("famO").value = f.famOther; $("subO").value = f.subOther; $("dos").value = f.dossier; $("ser").value = f.serial; $("ord").value = f.order;
-    fam.onchange = function () { f.fam = fam.value; f.sub = ""; fillSubs(); upd(); checkExisting(); };
+    function unsel() { if (mem.sel) { mem.sel = null; var e = $("exFiles"); if (e) e.remove(); drawSearch(); } }
+    fam.onchange = function () { unsel(); f.fam = fam.value; f.sub = ""; fillSubs(); upd(); checkExisting(); };
     sub.onchange = function () { f.sub = sub.value; upd(); };
     $("famO").oninput = function () { f.famOther = this.value; upd(); };
     $("famO").onchange = checkExisting;
     $("subO").oninput = function () { f.subOther = this.value; upd(); };
-    $("dos").oninput = function () { f.dossier = this.value; upd(); };
+    $("dos").oninput = function () { unsel(); f.dossier = this.value; upd(); };
     $("dos").onchange = checkExisting;
     $("ser").oninput = function () { f.serial = this.value; };
     $("ord").oninput = function () { f.order = this.value; };
@@ -186,7 +273,7 @@
     dr.ondrop = function (e) { e.preventDefault(); dr.classList.remove("over"); var fl = e.dataTransfer.files; if (fl && fl[0]) { f.file = fl[0]; upd(); } };
     function tick() { if ($("now")) $("now").textContent = OE.human(new Date()); }
     tick(); clearInterval(mem.tick); mem.tick = setInterval(tick, 15000);
-    upd(); numTip(); if (f.dossier && f.fam) checkExisting();
+    upd(); numTip(); drawSearch(); scan(); if (f.dossier && f.fam && !mem.sel) checkExisting();
     OE.bind("save", function () { save(x, f); });
   };
 
@@ -215,8 +302,9 @@
       .then(function (ex) { r.overwrote = ex; return F.write(dir, pname, f.file); })
       .then(function () { return F.listParams(dir, fn, f.dossier); })
       .then(function (list) {
-        var old = list.slice(C.KEEP); r.deleted = old.map(function (o) { return o.name; });
-        return old.reduce(function (p, o) { return p.then(function () { return dir.removeEntry(o.name); }); }, Promise.resolve()).then(function () { return list.slice(0, C.KEEP); });
+        // retention per extension group: only the group of the new file can exceed the limit
+        var rt = F.retain(list), old = rt.drop; r.deleted = old.map(function (o) { return o.name; });
+        return old.reduce(function (p, o) { return p.then(function () { return dir.removeEntry(o.name); }); }, Promise.resolve()).then(function () { return rt.keep; });
       })
       .then(function (files) {
         r.files = files; r.pdfName = F.pdfName(fn, sn, f.dossier);
@@ -228,7 +316,7 @@
           return F.write(dir, r.pdfName, blob).then(function () { return F.write(dir, C.META, new Blob([JSON.stringify(meta, null, 2)], { type: "application/json" })); });
         });
       })
-      .then(function () { r.folder = F.label() + "\\" + OE.safeName(fn, true) + "\\" + OE.safeName(f.dossier); mem.result = r; OE.go("result"); })
+      .then(function () { r.folder = F.label() + "\\" + OE.safeName(fn, true) + "\\" + OE.safeName(f.dossier); mem.result = r; mem.sel = null; mem.dq = ""; OE.rescan(); OE.go("result"); })
       .catch(function (e) { b.disabled = false; b.textContent = x.save; OE.err(OE.fmt(x.saveErr, { e: e.message || e })); });
   }
 
@@ -242,11 +330,10 @@
       "<li><span><b>" + x.resPdf + '</b><span id="rPdf">' + esc(r.pdfName) + "</span></span></li>" +
       "<li><span><b>" + x.resMeta + "</b>" + esc(C.META) + "</span></li>" +
       (r.deleted.length ? '<li class="del"><span><b>' + x.resDel + '</b><span id="rDel">🗑 ' + r.deleted.map(esc).join("<br>🗑 ") + "</span></span></li>" : "") +
-      "</ul><h3 class=\"sub\">" + x.resList + '</h3><ul class="res" id="rList">' +
-      r.files.map(function (f, i) { return "<li>" + (i === 0 ? '<span class="badge g">' + x.active + "</span> " : "") + "<b>" + esc(f.name) + "</b><em>" + OE.stampHuman(f.stamp) + "</em></li>"; }).join("") +
-      '</ul><div class="btns"><button class="btn sec" id="newD">' + x.newDev + '</button><button class="btn pri" id="openP">' + x.openPdf + "</button></div>";
+      "</ul><h3 class=\"sub\">" + x.resList + '</h3><div id="rList">' + groupedHtml(x, r.files, true) + "</div>" +
+      '<div class="btns"><button class="btn sec" id="newD">' + x.newDev + '</button><button class="btn pri" id="openP">' + x.openPdf + "</button></div>";
     $("card").innerHTML = h;
-    OE.bind("newD", function () { mem.form = blank(); mem.result = null; OE.go("form", -1); });
+    OE.bind("newD", function () { mem.form = blank(); mem.result = null; mem.sel = null; OE.go("form", -1); });
     OE.bind("openP", function () { if (!mem.pdfBlob) return; var u = URL.createObjectURL(mem.pdfBlob); window.open(u, "_blank"); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); });
   };
 })(window.OE);

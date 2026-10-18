@@ -181,3 +181,27 @@ h3.sub{font-size:15px;margin:16px 0 4px}
 .big-img .hx{border:0;background:#f1f5f9;color:var(--mu);font-size:22px;width:40px;height:40px;border-radius:50%;cursor:pointer}
 .big-img img{width:100%;display:block;border-radius:8px}
 .big-img .cap{font-size:15px;font-weight:600;margin:8px 0 0}
+/* existing-dossier search (style of the Onderhoud_Entretien WO search) */
+.srch{margin:-4px 0 14px;padding:12px 14px 14px;border:2px solid #e2e8f0;border-radius:16px;background:#f8fafc}
+.srow{display:flex;align-items:center;gap:10px}
+.srow .lbl{margin:0;flex:1;font-size:14px;color:var(--tx)}
+.scount{font-size:12px;color:var(--mu)}
+.srow .small{margin:0;padding:6px 0}
+#dq{margin-top:8px;padding:11px 14px;font-size:16px;border-radius:12px;background:#fff}
+.wolist{margin-top:6px;max-height:250px;overflow-y:auto;overscroll-behavior:contain;border:2px solid #e2e8f0;border-radius:12px;background:#fff}
+.wolist button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:8px;border:0;border-bottom:1px solid #eef2f7;background:#fff;padding:6px 14px;min-height:48px;font-size:15px;text-align:left;cursor:pointer;color:var(--tx)}
+.wolist button:last-child{border-bottom:0}
+.wolist button:hover{background:#f5f7ff}
+.wolist button small{color:var(--mu);font-size:12px;white-space:nowrap}
+.wolist button span small{display:block;white-space:normal}
+.wolist button.on{background:#eef2ff;box-shadow:inset 4px 0 0 var(--a)}
+.wolist b{word-break:break-all}
+.wohint{margin:0;padding:14px;text-align:center}
+.srch .wosel{margin:0;justify-content:space-between}
+.srch .wosel small{margin-left:20px}
+.wosel button{border:0;background:#fff;color:var(--a);font-weight:800;border-radius:10px;padding:10px 12px;min-height:44px;cursor:pointer;flex:none}
+.exf{margin-top:12px;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;background:#fff}
+.exf b{font-size:13px;color:var(--mu)}
+.exf li{word-break:break-all}
+.xg{margin-top:8px}.xgh{display:inline-block;font-weight:800;font-size:13px;color:var(--a);background:#eef2ff;border-radius:6px;padding:2px 8px}
+.xgh small{color:var(--mu);font-weight:600}

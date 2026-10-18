@@ -38,11 +38,16 @@
     y = Math.max(y, imgTop + 95) + 4;
     doc.setDrawColor(C.li[0], C.li[1], C.li[2]); doc.setLineWidth(0.3); doc.line(M, y - 5, W - M, y - 5);
     font("bold", 11.5); doc.text(clean(P.files), M, y); y += 8;
-    d.files.forEach(function (f, i) {
-      font("bold", 10.5); doc.splitTextToSize(clean(f.name), W - 2 * M).forEach(function (l) { doc.text(l, M, y); y += 5; });
-      font("normal", 9.5, C.mu); doc.text(clean(P.date + ": " + OE.stampHuman(f.stamp)), M, y); y += 5;
-      if (i === 0) { font("bold", 9.5, C.ok); doc.text(clean(P.active), M, y); y += 5; }
-      y += 3;
+    function need(h) { if (y + h > 278) { doc.addPage(); y = 20; } }
+    OE.fs.groups(d.files).forEach(function (g) { // grouped per extension, newest per group = active
+      need(14); font("bold", 10.5, C.red); doc.text(clean(P.type + ": " + (g.ext || P.noExt) + "  (" + g.files.length + "/" + OE.CFG.KEEP + ")"), M, y); y += 6.5;
+      g.files.forEach(function (f, i) {
+        need(18); font("bold", 10.5); doc.splitTextToSize(clean(f.name), W - 2 * M - 4).forEach(function (l) { doc.text(l, M + 4, y); y += 5; });
+        font("normal", 9.5, C.mu); doc.text(clean(P.date + ": " + OE.stampHuman(f.stamp)), M + 4, y); y += 5;
+        if (i === 0) { font("bold", 9.5, C.ok); doc.text(clean(P.active), M + 4, y); y += 5; }
+        y += 2.5;
+      });
+      y += 2;
     });
     font("normal", 8, C.mu); doc.text(clean(P.footer + " · " + OE.human(d.updated)), M, 287);
     return doc.output("blob");
