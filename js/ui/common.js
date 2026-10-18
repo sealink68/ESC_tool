@@ -1,0 +1,72 @@
+/* ui/common.js – DOM helpers, rendering frame, header, modal, help popup. */
+"use strict";
+(function (OE) {
+  OE.$ = function (id) { return document.getElementById(id); };
+  OE.esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  OE.screens = {};
+  OE.mem = {};
+  OE.hdr = function () {
+    var S = OE.S, L = S.lang || "nl";
+    document.title = OE.CFG.APP; document.documentElement.lang = L;
+    [].forEach.call(document.querySelectorAll("#seg button"), function (b) { b.classList.toggle("on", b.dataset.l === S.lang); });
+    OE.$("seg").style.visibility = S.lang ? "visible" : "hidden";
+    var st = OE.$("set"); st.hidden = !S.lang || !(S.tech.first && S.tech.last); st.title = st.ariaLabel = OE.t().settings.replace(/^\S+\s/, ""); OE.fitBrand();
+  };
+  /* dormakaba logo (same behaviour as Onderhoud_Entretien): full word mark only when it fits next to the title, else just the red symbol. */
+  OE.fitBrand = function () {
+    var h = document.querySelector("header"), b = h && h.querySelector(".brand"), t = OE.$("title"), r = h && h.querySelector(".hr");
+    if (!b || !t || !r) return;
+    h.classList.remove("bc", "bt", "bt2", "bt3"); t.style.whiteSpace = "nowrap";
+    var g = function (e) { return parseFloat(getComputedStyle(e).columnGap) || 0; }, room = h.clientWidth - r.offsetWidth - g(h);
+    var over = function () { return b.offsetWidth + g(b.parentNode) + t.scrollWidth > room + 0.5; };
+    if (over()) h.classList.add("bc");
+    var k = ["bt", "bt2", "bt3"], i = 0;
+    for (; i < k.length && over(); i++) { if (i) h.classList.remove(k[i - 1]); h.classList.add(k[i]); }
+    t.style.whiteSpace = "";
+  };
+  window.addEventListener("resize", function () { OE.fitBrand(); });
+  OE.anim = function (dir) { var c = OE.$("card"); c.classList.remove("slide-in-r", "slide-in-l"); void c.offsetWidth; c.classList.add(dir < 0 ? "slide-in-l" : "slide-in-r"); };
+  /* Flow guard: language -> name -> folder -> form. */
+  OE.render = function (dir) {
+    var S = OE.S, fs = OE.fs.state;
+    if (!S.lang) S.screen = "lang";
+    else if (!(S.tech.first && S.tech.last) && S.screen !== "lang") S.screen = "tech";
+    else if ((S.screen === "form" || S.screen === "result") && fs !== "granted") S.screen = "folder";
+    OE.hdr();
+    (OE.screens[S.screen] || OE.screens.form)();
+    OE.anim(dir || 1); window.scrollTo(0, 0);
+  };
+  OE.go = function (screen, dir) { OE.S.screen = screen; OE.save(); OE.render(dir); };
+  OE.bind = function (id, fn) { var e = OE.$(id); if (e) e.onclick = fn; };
+  OE.err = function (msg, id) { var e = OE.$(id || "err"); if (e) e.innerHTML = msg ? '<div class="err">⚠️ ' + OE.esc(msg) + "</div>" : ""; };
+  OE.confirmModal = function (text, onYes) {
+    var m = OE.$("modal"), x = OE.t(); m.onclick = null; m.dataset.help = "";
+    m.innerHTML = '<div class="card" role="dialog" aria-modal="true"><p id="mtext" class="pre-line">' + OE.esc(text) + '</p><div class="btns"><button class="btn sec" id="mno">' + x.cancel + '</button><button class="btn ok" id="myes">' + x.ok + "</button></div></div>";
+    m.hidden = false;
+    OE.$("mno").onclick = function () { m.hidden = true; };
+    OE.$("myes").onclick = function () { m.hidden = true; onYes(); };
+  };
+  function helpBody(L, sc) {
+    var lines = (OE.HELP[L][sc] || OE.HELP[L].form), out = "", ul = "";
+    lines.forEach(function (l) {
+      if (l.indexOf("• ") === 0) ul += "<li>" + OE.esc(l.slice(2)) + "</li>";
+      else { if (ul) { out += "<ul>" + ul + "</ul>"; ul = ""; } out += "<p>" + OE.esc(l) + "</p>"; }
+    });
+    return out + (ul ? "<ul>" + ul + "</ul>" : "");
+  }
+  /* Per-screen help popup. Language screen (no language yet): both languages. */
+  OE.showHelp = function () {
+    var S = OE.S, m = OE.$("modal"), sc = S.lang ? S.screen : "lang", both = !S.lang, L = S.lang || "nl", H = OE.HELP[L];
+    var title = both ? "Help / Aide" : H.title, close = both ? OE.HELP.nl.close + " / " + OE.HELP.fr.close : H.close;
+    var body = both ? "<h3>Nederlands</h3>" + helpBody("nl", sc) + "<h3>Français</h3>" + helpBody("fr", sc) : helpBody(L, sc);
+    m.innerHTML = '<div class="card hlp" id="hlp" role="dialog" aria-modal="true" aria-labelledby="hlph"><div class="hh"><h2 id="hlph">' + OE.esc(title) + '</h2><button type="button" class="hx" id="hlpx" aria-label="' + OE.esc(close) + '">×</button></div>' +
+      body + '<div class="btns"><button type="button" class="btn sec" id="hlpc">' + OE.esc(close) + "</button></div></div>";
+    m.hidden = false; m.dataset.help = "1";
+    function shut() { m.hidden = true; m.dataset.help = ""; m.onclick = null; document.removeEventListener("keydown", key); }
+    function key(e) { if (e.key === "Escape") shut(); }
+    OE.$("hlpx").onclick = OE.$("hlpc").onclick = shut;
+    m.onclick = function (e) { if (e.target === m) shut(); };
+    document.addEventListener("keydown", key);
+    setTimeout(function () { try { OE.$("hlpx").focus(); } catch (e) {} }, 30);
+  };
+})(window.OE);

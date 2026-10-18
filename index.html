@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#4f46e5">
+<title>ESC_tool</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="hl" id="brand">
+    <!-- dormakaba logo: full logo normally, only the red mark when space is short (JS fitBrand, forced below 360px). -->
+    <span class="brand" role="img" aria-label="dormakaba"><img class="bf" id="brand-logo" src="img/logo-full.svg" width="129" height="14" alt=""><img class="bm" id="brand-mark" src="img/logo-mark.svg" width="24" height="15" alt=""></span>
+    <h1 id="title">ESC_tool</h1>
+  </div>
+  <div class="hr">
+    <div class="seg" id="seg"><button data-l="nl">NL</button><button data-l="fr">FR</button></div>
+    <button type="button" class="set" id="set" hidden>⚙</button>
+    <button type="button" class="help" id="help" aria-label="Help / Aide">?</button>
+  </div>
+</header>
+<div class="card" id="card"></div>
+</div>
+<div id="modal" class="modal" hidden></div>
+<!-- Classic scripts (no build step, works on GitHub Pages). Order matters. -->
+<script src="js/vendor/jspdf.umd.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/models.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/fsx.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/ui/common.js"></script>
+<script src="js/ui/screens.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
