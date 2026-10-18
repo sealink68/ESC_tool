@@ -49,6 +49,9 @@ OE.T = {
     capPlate: "Nieuw typeplaatje: rood = serienummer (S/N), blauw = ordernummer",
     capProto: "Ouder Kaba-protocol: rood = serienummer (Fabrik-Nr.), blauw = ordernummer (Auftrags-Nr.)",
     enlarge: "Klik om te vergroten",
+    offline: "Offline", offlineTip: "Opslaan werkt; OneDrive synchroniseert later",
+    updAvail: "Nieuwe versie beschikbaar", updBtn: "Vernieuwen", offReady: "Klaar voor offline gebruik",
+    updDirty: "Het formulier bevat nog niet opgeslagen gegevens. Nu vernieuwen? Die gegevens gaan dan verloren.",
     edit: "Wijzigen", close: "Sluiten", yes: "Ja", no: "Nee", ok: "OK", cancel: "Annuleren", none: "—"
   },
   fr: {
@@ -88,6 +91,9 @@ OE.T = {
     capPlate: "Nouvelle plaque signalétique : rouge = numéro de série (S/N), bleu = numéro de commande",
     capProto: "Ancien protocole Kaba : rouge = numéro de série (Fabrik-Nr.), bleu = numéro de commande (Auftrags-Nr.)",
     enlarge: "Cliquer pour agrandir",
+    offline: "Hors ligne", offlineTip: "L'enregistrement fonctionne ; OneDrive synchronisera plus tard",
+    updAvail: "Nouvelle version disponible", updBtn: "Actualiser", offReady: "Prêt pour une utilisation hors ligne",
+    updDirty: "Le formulaire contient des données non enregistrées. Actualiser maintenant ? Ces données seront perdues.",
     edit: "Modifier", close: "Fermer", yes: "Oui", no: "Non", ok: "OK", cancel: "Annuler", none: "—"
   }
 };
@@ -175,7 +181,13 @@ OE.HELP_EXTRA = {
     "1. Edge: klik op het installatie-icoon in de adresbalk, of ⋯ > Apps > ‘Deze site als app installeren’.",
     "2. Chrome: klik op het installatie-icoon in de adresbalk.",
     "3. Tijdens de installatie wordt een snelkoppeling op het bureaublad aangeboden.",
-    "4. Klik daarna rechts op het app-icoon (grijs Kaba-logo) in de taakbalk en kies ‘Aan taakbalk vastmaken’."
+    "4. Klik daarna rechts op het app-icoon (grijs Kaba-logo) in de taakbalk en kies ‘Aan taakbalk vastmaken’.",
+    "## Offline werken",
+    "1. Open de app één keer met internet (of installeer ze als app). Daarna staat alles op je laptop, ook alle productfoto’s.",
+    "2. Zonder internet werkt de app gewoon (bovenaan staat dan ‘Offline’): opslaan gebeurt in de OneDrive-map op je laptop, inclusief de PDF met productfoto.",
+    "3. OneDrive synchroniseert de bestanden vanzelf zodra je weer online bent.",
+    "4. Voorwaarde: ESC-Share moet op ‘Altijd op dit apparaat behouden’ staan (groen vinkje, zie ‘Map controleren’).",
+    "5. Bewerk hetzelfde dossier niet offline op twee laptops tegelijk: OneDrive maakt dan een conflictkopie."
   ],
   fr: [
     "## Vérifier le dossier",
@@ -189,7 +201,13 @@ OE.HELP_EXTRA = {
     "1. Edge : cliquez sur l'icône d'installation dans la barre d'adresse, ou ⋯ > Applications > « Installer ce site en tant qu'application ».",
     "2. Chrome : cliquez sur l'icône d'installation dans la barre d'adresse.",
     "3. Pendant l'installation, un raccourci sur le bureau est proposé.",
-    "4. Ensuite, clic droit sur l'icône de l'app (logo Kaba gris) dans la barre des tâches, puis « Épingler à la barre des tâches »."
+    "4. Ensuite, clic droit sur l'icône de l'app (logo Kaba gris) dans la barre des tâches, puis « Épingler à la barre des tâches ».",
+    "## Travailler hors ligne",
+    "1. Ouvrez l'app une fois avec Internet (ou installez-la). Ensuite tout est sur votre ordinateur, y compris toutes les photos de produits.",
+    "2. Sans Internet, l'app fonctionne normalement (« Hors ligne » s'affiche en haut) : l'enregistrement se fait dans le dossier OneDrive de l'ordinateur, PDF avec photo du produit compris.",
+    "3. OneDrive synchronise les fichiers automatiquement dès que vous êtes de nouveau en ligne.",
+    "4. Condition : ESC-Share doit être réglé sur « Toujours conserver sur cet appareil » (coche verte, voir « Vérifier le dossier »).",
+    "5. Ne modifiez pas le même dossier hors ligne sur deux ordinateurs en même temps : OneDrive crée alors une copie de conflit."
   ]
 };
 ["nl", "fr"].forEach(function (L) { ["folder", "form"].forEach(function (sc) { OE.HELP[L][sc] = OE.HELP[L][sc].concat(OE.HELP_EXTRA[L]); }); });

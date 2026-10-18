@@ -312,7 +312,7 @@
   }
   function doSave(x, f, fn, sn, now, pname) {
     var F = OE.fs, b = $("save"), S = OE.S, r = { pname: pname, deleted: [], overwrote: false }, dir;
-    b.disabled = true; b.textContent = x.saving;
+    b.disabled = true; b.textContent = x.saving; OE.busy = true; // offline.js waits with an update reload while busy
     var info = subInfo(f), img = info && info.img, example = !!(info && info.example);
     if (!info && OE.MODELS[f.fam]) { img = exampleFor(f.fam); example = true; }
     F.dossierDir(fn, f.dossier, true).then(function (d) { dir = d; return F.exists(dir, pname); })
@@ -333,8 +333,8 @@
           return F.write(dir, r.pdfName, blob).then(function () { return F.write(dir, C.META, new Blob([JSON.stringify(meta, null, 2)], { type: "application/json" })); });
         });
       })
-      .then(function () { r.folder = F.label() + "\\" + OE.safeName(fn, true) + "\\" + OE.safeName(f.dossier); mem.result = r; mem.sel = null; mem.dq = ""; OE.rescan(); OE.go("result"); })
-      .catch(function (e) { b.disabled = false; b.textContent = x.save; OE.err(OE.fmt(x.saveErr, { e: e.message || e })); });
+      .then(function () { OE.busy = false; r.folder = F.label() + "\\" + OE.safeName(fn, true) + "\\" + OE.safeName(f.dossier); mem.result = r; mem.sel = null; mem.dq = ""; OE.rescan(); OE.go("result"); })
+      .catch(function (e) { OE.busy = false; b.disabled = false; b.textContent = x.save; OE.err(OE.fmt(x.saveErr, { e: e.message || e })); });
   }
 
   /* ---------- result ---------- */

@@ -10,7 +10,7 @@
     document.title = OE.CFG.APP; document.documentElement.lang = L;
     [].forEach.call(document.querySelectorAll("#seg button"), function (b) { b.classList.toggle("on", b.dataset.l === S.lang); });
     OE.$("seg").style.visibility = S.lang ? "visible" : "hidden";
-    var st = OE.$("set"); st.hidden = !S.lang || !(S.tech.first && S.tech.last); st.title = st.ariaLabel = OE.t().settings.replace(/^\S+\s/, ""); OE.fitBrand();
+    var st = OE.$("set"); st.hidden = !S.lang || !(S.tech.first && S.tech.last); st.title = st.ariaLabel = OE.t().settings.replace(/^\S+\s/, ""); if (OE.netUI) OE.netUI(); OE.fitBrand();
   };
   /* dormakaba logo (same behaviour as Onderhoud_Entretien): full word mark only when it fits next to the title, else just the red symbol. */
   OE.fitBrand = function () {

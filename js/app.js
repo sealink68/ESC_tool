@@ -13,8 +13,9 @@
   lg.addEventListener("error", noLogo); if (lg.complete && !lg.naturalWidth) noLogo();
   window.addEventListener("load", OE.fitBrand);
   OE.fs.init().then(function () { OE.render(1); });
-  /* PWA: service worker (relative path -> scope /ESC_tool/ on GitHub Pages). Only caches the app shell. */
+  /* PWA: service worker (relative path -> scope /ESC_tool/ on GitHub Pages). Precaches the whole app for offline use;
+     offline.js shows the update banner / offline badge. */
   OE.swReady = ("serviceWorker" in navigator && window.isSecureContext)
-    ? new Promise(function (ok) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js", { scope: "./" }).then(ok, function () { ok(null); }); }); })
+    ? new Promise(function (ok) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js", { scope: "./" }).then(ok, function () { ok(null); }); }); }).then(OE.swSetup)
     : Promise.resolve(null);
 })(window.OE);

@@ -9,7 +9,7 @@ Live (GitHub Pages): https://sealink68.github.io/ESC_tool/
 ## Requirements
 - **Microsoft Edge or Google Chrome** (desktop). The app uses the File System Access API (`showDirectoryPicker`);
   Firefox and Safari get a clear NL/FR message.
-- No backend, no accounts, no secrets, no network calls besides loading the app itself.
+- No backend, no accounts, no secrets, no network calls besides loading the app itself; works offline after one visit.
 
 ## Flow
 1. First start: language (NL/FR), then the technician's first and last name (localStorage; change via ⚙).
@@ -31,12 +31,29 @@ existant** next to the form title opens it (click again, ✕ or Esc closes it). 
 The ? help also explains, in numbered steps, how to check the OneDrive folder (**Map controleren / Vérifier le dossier**)
 and how to install the app (**App installeren / Installer l'app**).
 
-## Desktop app (PWA)
+## Desktop app (PWA) and offline use
 `manifest.webmanifest` + `sw.js` make the site installable in Edge/Chrome (address-bar install icon, or Edge ⋯ > Apps >
 *Deze site als app installeren*). The icon is the old grey Kaba wordmark (`icons/`, from Wikimedia Commons
-*Kaba Group logo.svg*, recoloured grey). The service worker only caches the app shell: network-first for
-HTML/JS/CSS/manifest, cache-first for images; it never handles File System Access or IndexedDB. Bump
-`CACHE_VERSION` in `sw.js` when the shell file list changes.
+*Kaba Group logo.svg*, recoloured grey).
+
+**Offline:** after one online visit the app works fully offline, including the info PDF with the right product image
+for every sub-model. The service worker precaches the complete app on install (HTML, CSS, JS, jsPDF, manifest,
+icons, logos, all product images, the help photos; ~1.4 MB). The app uses system fonts and the PDF uses jsPDF's
+built-in Helvetica, so there are no font files and no external URLs at all.
+- Precache list: generated into `sw.js` by `python3 tools/gen_precache.py` (between `PRECACHE:BEGIN/END`).
+  **Run it after adding or changing any file** (new product image, JS, CSS…); `--check` fails if `sw.js` is stale
+  (the tests run it). The list carries a content hash, so every change produces a new service-worker version.
+- Install: 6 parallel downloads with one retry. A missing image is logged and fetched later (on activate / when the
+  app comes back online); a missing core file (HTML/CSS/JS/manifest) aborts the install so the previous version keeps
+  working. Old `esc-shell-*` caches are deleted on activate.
+- Fetch: only same-origin GET requests inside the scope are handled. HTML/JS/CSS/manifest: network-first with a 3 s
+  timeout, then the cached copy (updates still arrive online; a slow or missing network never hangs the app).
+  Images: cache-first. File System Access and the folder handle in IndexedDB are never touched.
+- UI (`js/offline.js`): an orange **Offline / Hors ligne** badge in the header (tooltip: saving works, OneDrive syncs
+  later), a one-time toast **Klaar voor offline gebruik / Prêt pour une utilisation hors ligne**, and a banner
+  **Nieuwe versie beschikbaar – Vernieuwen / Nouvelle version disponible – Actualiser** when a new version is waiting.
+  The banner activates it (skipWaiting + reload); with unsaved form data it asks first, and it never reloads during a save.
+- Help (folder + form screens): section **Offline werken / Travailler hors ligne**.
 
 Names are made Windows-safe: spaces and `\ / : * ? " < > |` become `_`, trailing dots/spaces are removed
 (sub-models also collapse repeated `_`, e.g. `Argus 60` → `Argus_60`).
@@ -53,8 +70,10 @@ js/fsx.js          folder access, naming, retention, metadata
 js/pdf.js          info PDF (jsPDF)
 js/ui/common.js    header, logo fit, modal, per-screen help
 js/ui/screens.js   screens: lang, tech, folder, form, result, settings
+js/offline.js      offline badge, update banner, offline-ready toast
 js/app.js          bootstrap + service worker registration
-manifest.webmanifest, sw.js   PWA (install as desktop app)
+manifest.webmanifest, sw.js   PWA (install as desktop app, offline precache)
+tools/gen_precache.py        writes the precache list into sw.js
 icons/             PWA icons (192, 512, maskable 192/512, apple-touch-icon 180, kaba-logo.svg)
 js/vendor/jspdf.umd.min.js  (vendored, MIT – see jspdf.LICENSE)
 img/models/*.jpg   product images (dormakaba "Product Overview Security Gates" 02/2025 and dormakaba brochures)

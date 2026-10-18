@@ -19,6 +19,7 @@
     <h1 id="title">ESC_tool</h1>
   </div>
   <div class="hr">
+    <span class="offb" id="offB" tabindex="0" hidden><span id="offT">Offline</span><span class="offtip" id="offTip" role="tooltip"></span></span>
     <div class="seg" id="seg"><button data-l="nl">NL</button><button data-l="fr">FR</button></div>
     <button type="button" class="set" id="set" hidden>⚙</button>
     <button type="button" class="help" id="help" aria-label="Help / Aide">?</button>
@@ -26,6 +27,8 @@
 </header>
 <div class="card" id="card"></div>
 </div>
+<div id="updB" class="updb" role="status" hidden><span id="updT"></span><button type="button" id="updGo"></button></div>
+<div id="toast" class="toast" role="status" hidden></div>
 <div id="modal" class="modal" hidden></div>
 <!-- Classic scripts (no build step, works on GitHub Pages). Order matters. -->
 <script src="js/vendor/jspdf.umd.min.js"></script>
@@ -36,6 +39,7 @@
 <script src="js/fsx.js"></script>
 <script src="js/pdf.js"></script>
 <script src="js/ui/common.js"></script>
+<script src="js/offline.js"></script>
 <script src="js/ui/screens.js"></script>
 <script src="js/app.js"></script>
 </body>
