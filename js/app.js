@@ -13,4 +13,8 @@
   lg.addEventListener("error", noLogo); if (lg.complete && !lg.naturalWidth) noLogo();
   window.addEventListener("load", OE.fitBrand);
   OE.fs.init().then(function () { OE.render(1); });
+  /* PWA: service worker (relative path -> scope /ESC_tool/ on GitHub Pages). Only caches the app shell. */
+  OE.swReady = ("serviceWorker" in navigator && window.isSecureContext)
+    ? new Promise(function (ok) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js", { scope: "./" }).then(ok, function () { ok(null); }); }); })
+    : Promise.resolve(null);
 })(window.OE);

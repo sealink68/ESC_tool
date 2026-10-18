@@ -41,7 +41,7 @@ OE.T = {
     resOver: "Bestaand bestand met dezelfde naam werd overschreven.",
     newDev: "➕ Nieuw toestel", openPdf: "📄 Open PDF", saveErr: "Opslaan mislukt: {e}",
     settings: "⚙ Instellingen", setH: "Instellingen", setName: "Naam technieker", setFolder: "Map", setLang: "Taal",
-    srchH: "Bestaand dossier zoeken", srchPh: "Zoek op dossier, familie, model, serie- of ordernummer…",
+    srchH: "Bestaand dossier zoeken", srchClose: "Zoeken sluiten", srchPh: "Zoek op dossier, familie, model, serie- of ordernummer…",
     srchLoading: "Laden…", srchNone: "Nog geen dossiers in de map.", srchNoHit: "Geen dossier gevonden.", srchRefresh: "↻ Vernieuwen",
     srchErr: "De map kon niet gelezen worden.", srchCount: "{n} dossiers", newDos: "Nieuw dossier", exFiles: "Bestaande parameterbestanden",
     selected: "Geselecteerd dossier", updatedAt: "bijgewerkt",
@@ -80,7 +80,7 @@ OE.T = {
     resOver: "Un fichier existant portant le même nom a été remplacé.",
     newDev: "➕ Nouvel appareil", openPdf: "📄 Ouvrir le PDF", saveErr: "Échec de l'enregistrement : {e}",
     settings: "⚙ Paramètres", setH: "Paramètres", setName: "Nom du technicien", setFolder: "Dossier", setLang: "Langue",
-    srchH: "Rechercher un dossier existant", srchPh: "Rechercher par dossier, famille, modèle, n° de série ou de commande…",
+    srchH: "Rechercher un dossier existant", srchClose: "Fermer la recherche", srchPh: "Rechercher par dossier, famille, modèle, n° de série ou de commande…",
     srchLoading: "Chargement…", srchNone: "Aucun dossier dans le dossier pour l'instant.", srchNoHit: "Aucun dossier trouvé.", srchRefresh: "↻ Actualiser",
     srchErr: "Impossible de lire le dossier.", srchCount: "{n} dossiers", newDos: "Nouveau dossier", exFiles: "Fichiers de paramètres existants",
     selected: "Dossier sélectionné", updatedAt: "mis à jour",
@@ -111,7 +111,7 @@ OE.PDFT = {
   footer: "Gegenereerd met ESC_tool / Généré avec ESC_tool"
 };
 
-/* Per-screen help ("?" button). "• " lines become a bullet list. */
+/* Per-screen help ("?" button). "• " lines become a bullet list, "1. " lines a numbered list, "## " lines a sub-heading. */
 OE.HELP = {
   nl: {
     title: "Help", close: "Sluiten",
@@ -122,8 +122,9 @@ OE.HELP = {
       "• Na een herstart van de browser vraagt die opnieuw toestemming: klik dan op ‘Toegang tot map hernieuwen’.",
       "• Werkt enkel in Microsoft Edge of Google Chrome."],
     form: ["Vul de gegevens van het toestel in en kies het parameterbestand.",
-      "• Bestaand dossier openen: typ in ‘Bestaand dossier zoeken’ (dossiernummer, familie, model, serie- of ordernummer). Kies een lijn met de muis of met ↑ ↓ en Enter: alle velden worden ingevuld en je ziet de bestaande parameterbestanden. Kies dan enkel het nieuwe parameterbestand en klik Opslaan.",
-      "• ‘Nieuw dossier’ maakt het formulier leeg. ‘↻ Vernieuwen’ leest de map opnieuw in (bv. na wijzigingen door collega’s via OneDrive).",
+      "• Nieuw dossier: vul gewoon het dossiernummer in.",
+      "• Bestaand dossier openen: klik op 🔍 ‘Bestaand dossier zoeken’ en typ dossiernummer, familie, model, serie- of ordernummer. Kies een lijn met de muis of met ↑ ↓ en Enter: alle velden worden ingevuld en je ziet de bestaande parameterbestanden. Kies dan enkel het nieuwe parameterbestand en klik Opslaan.",
+      "• Nogmaals op 🔍 klikken of op ✕ (of Esc) sluit het zoeken. ‘Nieuw dossier’ maakt het formulier leeg. ‘↻ Vernieuwen’ leest de map opnieuw in (bv. na wijzigingen door collega’s via OneDrive).",
       "• Familie en submodel bepalen de mapnaam en de bestandsnaam. Staat het model er niet bij? Kies ‘Ander…’.",
       "• Het dossiernummer wordt de mapnaam: spaties en tekens \\ / : * ? \" < > | worden ‘_’.",
       "• Serienummer en ordernummer: op het typeplaatje van het toestel staat het serienummer na ‘S/N:’ en het ordernummer naast de datum. Op een ouder groen Kaba-protocol (Werkstattabnahmeprotokoll) is het serienummer de ‘Fabrik-Nr.’ en het ordernummer de ‘Auftrags-Nr.’. Zie het ⓘ-icoon naast de velden.",
@@ -144,8 +145,9 @@ OE.HELP = {
       "• Après un redémarrage, le navigateur redemande l'autorisation : cliquez sur « Renouveler l'accès au dossier ».",
       "• Fonctionne uniquement dans Microsoft Edge ou Google Chrome."],
     form: ["Complétez les données de l'appareil et choisissez le fichier de paramètres.",
-      "• Ouvrir un dossier existant : tapez dans « Rechercher un dossier existant » (n° de dossier, famille, modèle, n° de série ou de commande). Choisissez une ligne à la souris ou avec ↑ ↓ et Entrée : tous les champs sont remplis et les fichiers de paramètres existants sont affichés. Choisissez ensuite seulement le nouveau fichier et cliquez sur Enregistrer.",
-      "• « Nouveau dossier » vide le formulaire. « ↻ Actualiser » relit le dossier (p. ex. après des modifications de collègues via OneDrive).",
+      "• Nouveau dossier : indiquez simplement le numéro de dossier.",
+      "• Ouvrir un dossier existant : cliquez sur 🔍 « Rechercher un dossier existant » et tapez le n° de dossier, la famille, le modèle, le n° de série ou de commande. Choisissez une ligne à la souris ou avec ↑ ↓ et Entrée : tous les champs sont remplis et les fichiers de paramètres existants sont affichés. Choisissez ensuite seulement le nouveau fichier et cliquez sur Enregistrer.",
+      "• Un nouveau clic sur 🔍 ou sur ✕ (ou Échap) ferme la recherche. « Nouveau dossier » vide le formulaire. « ↻ Actualiser » relit le dossier (p. ex. après des modifications de collègues via OneDrive).",
       "• La famille et le sous-modèle déterminent le nom du dossier et du fichier. Modèle absent ? Choisissez « Autre… ».",
       "• Le numéro de dossier devient le nom du dossier : les espaces et les caractères \\ / : * ? \" < > | deviennent « _ ».",
       "• Numéro de série et numéro de commande : sur la plaque signalétique de l'appareil, le numéro de série suit « S/N: » et le numéro de commande se trouve à côté de la date. Sur un ancien protocole Kaba vert (Werkstattabnahmeprotokoll), le numéro de série est le « Fabrik-Nr. » et le numéro de commande l'« Auftrags-Nr. ». Voir l'icône ⓘ à côté des champs.",
@@ -158,3 +160,36 @@ OE.HELP = {
     settings: ["Modifiez ici votre nom, le dossier choisi ou la langue."]
   }
 };
+
+/* Extra help sections, shown on the folder screen and on the start screen (form). */
+OE.HELP_EXTRA = {
+  nl: [
+    "## Map controleren",
+    "1. Open Verkenner en klik links op ‘OneDrive – dormakaba’.",
+    "2. Staat de map ‘ESC-Share’ er? Zo niet: open ESC-Share op het web (SharePoint/OneDrive) en klik op ‘Snelkoppeling toevoegen aan Mijn bestanden’ of ‘Synchroniseren’.",
+    "3. Kijk naar het icoon naast ESC-Share: groen bolletje met wit vinkje = staat op deze laptop (goed). Blauw wolkje = enkel online.",
+    "4. Blauw wolkje? Klik rechts op ESC-Share en kies ‘Altijd op dit apparaat behouden’.",
+    "5. Het OneDrive-wolkje in de taakbalk (rechtsonder) moet ‘Up-to-date’ tonen: geen rood kruisje, niet gepauzeerd.",
+    "6. Test: sla een testdossier op (bv. TEST_jouwnaam) en vraag je manager of hij het ziet. Verwijder het daarna.",
+    "## App installeren",
+    "1. Edge: klik op het installatie-icoon in de adresbalk, of ⋯ > Apps > ‘Deze site als app installeren’.",
+    "2. Chrome: klik op het installatie-icoon in de adresbalk.",
+    "3. Tijdens de installatie wordt een snelkoppeling op het bureaublad aangeboden.",
+    "4. Klik daarna rechts op het app-icoon (grijs Kaba-logo) in de taakbalk en kies ‘Aan taakbalk vastmaken’."
+  ],
+  fr: [
+    "## Vérifier le dossier",
+    "1. Ouvrez l'Explorateur de fichiers et cliquez à gauche sur « OneDrive – dormakaba ».",
+    "2. Le dossier « ESC-Share » est-il là ? Sinon : ouvrez ESC-Share sur le web (SharePoint/OneDrive) et cliquez sur « Ajouter un raccourci à Mes fichiers » ou « Synchroniser ».",
+    "3. Regardez l'icône à côté d'ESC-Share : rond vert avec coche blanche = présent sur cet ordinateur (bon). Nuage bleu = en ligne uniquement.",
+    "4. Nuage bleu ? Clic droit sur ESC-Share, puis « Toujours conserver sur cet appareil ».",
+    "5. Le nuage OneDrive dans la barre des tâches (en bas à droite) doit indiquer « À jour » (Up-to-date) : pas de croix rouge, pas en pause.",
+    "6. Test : enregistrez un dossier de test (p. ex. TEST_votrenom) et demandez à votre manager s'il le voit. Supprimez-le ensuite.",
+    "## Installer l'app",
+    "1. Edge : cliquez sur l'icône d'installation dans la barre d'adresse, ou ⋯ > Applications > « Installer ce site en tant qu'application ».",
+    "2. Chrome : cliquez sur l'icône d'installation dans la barre d'adresse.",
+    "3. Pendant l'installation, un raccourci sur le bureau est proposé.",
+    "4. Ensuite, clic droit sur l'icône de l'app (logo Kaba gris) dans la barre des tâches, puis « Épingler à la barre des tâches »."
+  ]
+};
+["nl", "fr"].forEach(function (L) { ["folder", "form"].forEach(function (sc) { OE.HELP[L][sc] = OE.HELP[L][sc].concat(OE.HELP_EXTRA[L]); }); });

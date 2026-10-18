@@ -103,7 +103,7 @@ h1#title{font-size:22px}
 .hlp h2{margin:0;font-size:20px}.hlp h3{margin:14px 0 4px;font-size:15px;color:var(--a)}
 .hlp .hx{border:0;background:#f1f5f9;color:var(--mu);font-size:22px;width:40px;height:40px;border-radius:50%;cursor:pointer;flex:none}
 .hlp p{font-size:15px;font-weight:500;line-height:1.45;margin:0 0 6px}
-.hlp ul{overflow-wrap:anywhere;margin:0 0 6px;padding-left:20px;font-size:15px;line-height:1.45}.hlp li{margin:3px 0}
+.hlp ul,.hlp ol{overflow-wrap:anywhere;margin:0 0 6px;padding-left:20px;font-size:15px;line-height:1.45}.hlp li{margin:3px 0}
 /* dormakaba logo (top-left). White chip keeps the blue word mark + red symbol legible on the gradient.
    header.bc = compact: only the red symbol (set by JS when the full logo would collide, forced below 360px).
    header.bt/.bt2/.bt3 = slightly smaller title, only when needed to keep it on one line next to the symbol. */
@@ -197,11 +197,24 @@ h3.sub{font-size:15px;margin:16px 0 4px}
 .wolist button.on{background:#eef2ff;box-shadow:inset 4px 0 0 var(--a)}
 .wolist b{word-break:break-all}
 .wohint{margin:0;padding:14px;text-align:center}
-.srch .wosel{margin:0;justify-content:space-between}
-.srch .wosel small{margin-left:20px}
+.dselbox .wosel{margin:0;justify-content:space-between}
+.dselbox .wosel small{margin-left:20px}
 .wosel button{border:0;background:#fff;color:var(--a);font-weight:800;border-radius:10px;padding:10px 12px;min-height:44px;cursor:pointer;flex:none}
 .exf{margin-top:12px;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;background:#fff}
 .exf b{font-size:13px;color:var(--mu)}
 .exf li{word-break:break-all}
 .xg{margin-top:8px}.xgh{display:inline-block;font-weight:800;font-size:13px;color:var(--a);background:#eef2ff;border-radius:6px;padding:2px 8px}
 .xgh small{color:var(--mu);font-weight:600}
+/* Help sub-sections with numbered steps */
+.hlp h4.hs{margin:16px 0 4px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:16px;color:var(--tx)}
+.hlp ol{padding-left:24px}.hlp ol li{padding-left:2px}
+/* Search toggle (existing dossiers hidden until 🔍 is clicked) */
+.fh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px}
+.fh .q{margin:0}
+.stog{flex:none;display:inline-flex;align-items:center;gap:6px;border:2px solid #e2e8f0;background:#f8fafc;color:var(--a);font:inherit;font-size:14px;font-weight:700;border-radius:12px;padding:6px 12px;min-height:40px;cursor:pointer}
+.stog:hover{border-color:#c7d2fe}
+.stog.on{background:#eef2ff;border-color:var(--a)}
+.srch[hidden],.dselbox:empty{display:none}
+.dselbox{margin:-4px 0 14px}
+.srow .sx{flex:none;border:0;background:#e2e8f0;color:var(--mu);font-size:18px;line-height:1;width:34px;height:34px;border-radius:50%;cursor:pointer}
+@media (max-width:440px){.stog .stl{display:none}.stog{padding:6px 10px}}

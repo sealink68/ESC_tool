@@ -118,7 +118,9 @@
   function descOf(m) { var d = m.desc || {}; return typeof d === "string" ? d : (d[OE.S.lang] || d.nl || d.en || ""); }
   function exampleFor(fam) { var l = OE.MODELS[fam] || []; for (var i = 0; i < l.length; i++) if (l[i].img && !l[i].example) return l[i].img; return null; }
 
-  /* ---------- existing-dossier search (cached scan of the projecten folder) ---------- */
+  /* ---------- existing-dossier search (cached scan of the projecten folder) ----------
+     Hidden by default: the 🔍 button (#srchT) toggles it, ✕ / Escape closes it. Picking a dossier closes the search
+     and shows the selected dossier in #dselBox. The scan itself still runs in the background so opening is instant. */
   function scan(force) {
     if (mem.scanP && !force) return mem.scanP;
     mem.scanErr = null; if (force) mem.dossiers = null;
@@ -135,19 +137,30 @@
     return (mem.dossiers || []).filter(function (d) { var h = hay(d); return q.every(function (w) { return h.indexOf(w) >= 0; }); });
   }
   function dDate(d) { return d.updated ? OE.human(new Date(d.updated)) : "—"; }
+  function setSearch(open) {
+    mem.srchOpen = !!open; drawSearch();
+    if (open) { var q = $("dq"); if (q) try { q.focus(); } catch (e) {} }
+  }
+  OE.setSearch = setSearch;
   function drawSearch() {
-    var x = OE.t(), el = $("srch"); if (!el) return;
-    if (mem.sel) {
-      var d = mem.sel;
-      el.innerHTML = '<div class="wosel" id="dsel"><span>✓ <b>' + esc(d.dossier) + "</b><small>" + esc(d.family + (d.sub ? " / " + d.sub : "") + (d.serial ? " · " + d.serial : "") + " · " + x.updatedAt + " " + dDate(d)) + "</small></span>" +
-        '<button id="newDos" type="button">✚ ' + x.newDos + "</button></div>";
-      OE.bind("newDos", resetForm); return;
+    var x = OE.t(), el = $("srch"), sb = $("dselBox"), tg = $("srchT"); if (!el) return;
+    if (sb) {
+      if (mem.sel) {
+        var d = mem.sel;
+        sb.innerHTML = '<div class="wosel" id="dsel"><span>✓ <b>' + esc(d.dossier) + "</b><small>" + esc(d.family + (d.sub ? " / " + d.sub : "") + (d.serial ? " · " + d.serial : "") + " · " + x.updatedAt + " " + dDate(d)) + "</small></span>" +
+          '<button id="newDos" type="button">✚ ' + x.newDos + "</button></div>";
+        OE.bind("newDos", resetForm);
+      } else sb.innerHTML = "";
     }
-    var head = '<div class="srow"><label class="lbl" for="dq">🔎 ' + x.srchH + '</label><span class="scount" id="dcount"></span><button class="small" id="drl" type="button">' + x.srchRefresh + "</button></div>";
+    if (tg) { tg.classList.toggle("on", !!mem.srchOpen); tg.setAttribute("aria-expanded", mem.srchOpen ? "true" : "false"); }
+    el.hidden = !mem.srchOpen;
+    if (!mem.srchOpen) { el.innerHTML = ""; return; }
+    var head = '<div class="srow"><label class="lbl" for="dq">🔍 ' + x.srchH + '</label><span class="scount" id="dcount"></span><button class="small" id="drl" type="button">' + x.srchRefresh + "</button>" +
+      '<button type="button" class="sx" id="dqx" title="' + esc(x.srchClose) + '" aria-label="' + esc(x.srchClose) + '">✕</button></div>';
     if (OE.fs.state === "prompt") {
       el.innerHTML = head + '<div class="err">' + esc(x.folderRenewP) + '</div><button class="btn pri big" id="srenew">' + x.folderRenew + "</button>";
       OE.bind("srenew", function () { OE.fs.renew().then(function () { OE.rescan(); drawSearch(); }, function () {}); });
-      OE.bind("drl", function () { OE.rescan(); drawSearch(); }); return;
+      OE.bind("drl", function () { OE.rescan(); drawSearch(); }); OE.bind("dqx", function () { setSearch(false); try { $("srchT").focus(); } catch (e) {} }); return;
     }
     el.innerHTML = head + '<input id="dq" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-controls="dlist" aria-expanded="true" placeholder="' + esc(x.srchPh) + '">' +
       '<div class="wolist dlist" id="dlist" role="listbox"></div>';
@@ -158,8 +171,10 @@
       if (e.key === "ArrowDown") { e.preventDefault(); mem.di = Math.min(n - 1, (mem.di || 0) + 1); hl(); }
       else if (e.key === "ArrowUp") { e.preventDefault(); mem.di = Math.max(0, (mem.di || 0) - 1); hl(); }
       else if (e.key === "Enter") { e.preventDefault(); var b = $("dlist").querySelectorAll("[data-i]")[mem.di || 0]; if (b) b.click(); }
+      else if (e.key === "Escape") { e.preventDefault(); setSearch(false); try { $("srchT").focus(); } catch (x2) {} }
     };
     OE.bind("drl", function () { OE.rescan(); drawSearch(); });
+    OE.bind("dqx", function () { setSearch(false); try { $("srchT").focus(); } catch (e) {} });
     drawItems();
   }
   function hl() {
@@ -186,11 +201,11 @@
     var subs = fams[f.fam] || [];
     if (!d.sub) f.sub = ""; else if (subs.some(function (s) { return s.id === d.sub; })) { f.sub = d.sub; f.subOther = ""; } else { f.sub = C.OTHER; f.subOther = d.sub; }
     f.dossier = OE.safeName(d.dossier) === d.folder ? d.dossier : d.folder;
-    f.serial = d.serial; f.order = d.order; mem.sel = d; mem.dq = "";
+    f.serial = d.serial; f.order = d.order; mem.sel = d; mem.dq = ""; mem.srchOpen = false;
     SC.form();
     var fi = $("file"); if (fi) try { $("drop").focus(); } catch (e) {}
   }
-  function resetForm() { mem.form = blank(); mem.sel = null; mem.dq = ""; SC.form(); var q = $("dq"); if (q) q.focus(); }
+  function resetForm() { mem.form = blank(); mem.sel = null; mem.dq = ""; SC.form(); try { $("dos").focus(); } catch (e) {} }
   /* Parameter files grouped per extension, newest of each group marked active. */
   function groupedHtml(x, files, bold) {
     return OE.fs.groups(files).map(function (g) {
@@ -207,7 +222,8 @@
   SC.form = function () {
     var x = OE.t(), f = mem.form, fams = Object.keys(OE.MODELS);
     var famOpts = '<option value="">' + x.choose + "</option>" + fams.map(function (k) { return '<option value="' + esc(k) + '">' + esc(k) + "</option>"; }).join("") + '<option value="' + C.OTHER + '">' + x.other + "</option>";
-    $("card").innerHTML = '<h2 class="q">' + x.formH + '</h2><div class="srch" id="srch"></div><div class="grid"><div class="col">' +
+    $("card").innerHTML = '<div class="fh"><h2 class="q">' + x.formH + '</h2><button type="button" class="stog" id="srchT" aria-controls="srch" aria-expanded="false" title="' + esc(x.srchH) + '" aria-label="' + esc(x.srchH) + '">🔍<span class="stl">' + esc(x.srchH) + "</span></button></div>" +
+      '<div class="dselbox" id="dselBox"></div><div class="srch" id="srch" hidden></div><div class="grid"><div class="col">' +
       '<label class="lbl" for="fam">' + x.family + ' *</label><select id="fam">' + famOpts + '</select><input id="famO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
       '<label class="lbl" for="sub">' + x.sub + ' *</label><select id="sub"></select><input id="subO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
       '<label class="lbl" for="dos">' + x.dossier + ' *</label><input id="dos" autocomplete="off" spellcheck="false" placeholder="' + esc(x.dossierPh) + '"><p class="hint" id="dosN"></p>' +
@@ -273,6 +289,7 @@
     dr.ondrop = function (e) { e.preventDefault(); dr.classList.remove("over"); var fl = e.dataTransfer.files; if (fl && fl[0]) { f.file = fl[0]; upd(); } };
     function tick() { if ($("now")) $("now").textContent = OE.human(new Date()); }
     tick(); clearInterval(mem.tick); mem.tick = setInterval(tick, 15000);
+    $("srchT").onclick = function () { setSearch(!mem.srchOpen); };
     upd(); numTip(); drawSearch(); scan(); if (f.dossier && f.fam && !mem.sel) checkExisting();
     OE.bind("save", function () { save(x, f); });
   };
@@ -333,7 +350,7 @@
       "</ul><h3 class=\"sub\">" + x.resList + '</h3><div id="rList">' + groupedHtml(x, r.files, true) + "</div>" +
       '<div class="btns"><button class="btn sec" id="newD">' + x.newDev + '</button><button class="btn pri" id="openP">' + x.openPdf + "</button></div>";
     $("card").innerHTML = h;
-    OE.bind("newD", function () { mem.form = blank(); mem.result = null; mem.sel = null; OE.go("form", -1); });
+    OE.bind("newD", function () { mem.form = blank(); mem.result = null; mem.sel = null; mem.srchOpen = false; OE.go("form", -1); });
     OE.bind("openP", function () { if (!mem.pdfBlob) return; var u = URL.createObjectURL(mem.pdfBlob); window.open(u, "_blank"); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); });
   };
 })(window.OE);

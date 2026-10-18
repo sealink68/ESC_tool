@@ -47,12 +47,17 @@
     OE.$("myes").onclick = function () { m.hidden = true; onYes(); };
   };
   function helpBody(L, sc) {
-    var lines = (OE.HELP[L][sc] || OE.HELP[L].form), out = "", ul = "";
+    var lines = (OE.HELP[L][sc] || OE.HELP[L].form), out = "", li = "", tag = "";
+    function flush() { if (li) out += "<" + tag + ">" + li + "</" + tag + ">"; li = ""; tag = ""; }
+    function item(t, s) { if (tag !== t) flush(); tag = t; li += "<li>" + OE.esc(s) + "</li>"; }
     lines.forEach(function (l) {
-      if (l.indexOf("• ") === 0) ul += "<li>" + OE.esc(l.slice(2)) + "</li>";
-      else { if (ul) { out += "<ul>" + ul + "</ul>"; ul = ""; } out += "<p>" + OE.esc(l) + "</p>"; }
+      var n = /^\d+\.\s+/.exec(l);
+      if (l.indexOf("• ") === 0) item("ul", l.slice(2));
+      else if (n) item("ol", l.slice(n[0].length));
+      else if (l.indexOf("## ") === 0) { flush(); out += '<h4 class="hs">' + OE.esc(l.slice(3)) + "</h4>"; }
+      else { flush(); out += "<p>" + OE.esc(l) + "</p>"; }
     });
-    return out + (ul ? "<ul>" + ul + "</ul>" : "");
+    flush(); return out;
   }
   /* Per-screen help popup. Language screen (no language yet): both languages. */
   OE.showHelp = function () {
