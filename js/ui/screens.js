@@ -71,6 +71,7 @@
   function famName(f) { return f.fam === C.OTHER ? f.famOther.trim() : f.fam; }
   function subName(f) { return f.sub === C.OTHER ? f.subOther.trim() : f.sub; }
   function subInfo(f) { var l = OE.MODELS[f.fam] || []; for (var i = 0; i < l.length; i++) if (l[i].id === f.sub) return l[i]; return null; }
+  function descOf(m) { var d = m.desc || {}; return typeof d === "string" ? d : (d[OE.S.lang] || d.nl || d.en || ""); }
   function exampleFor(fam) { var l = OE.MODELS[fam] || []; for (var i = 0; i < l.length; i++) if (l[i].img && !l[i].example) return l[i].img; return null; }
 
   SC.form = function () {
@@ -101,7 +102,7 @@
       var info = subInfo(f), img = info && info.img, ex = info && info.example, cap = "";
       if (!info && f.fam && OE.MODELS[f.fam]) { img = exampleFor(f.fam); ex = true; }
       if (img) cap = (info ? esc(info.id) : esc(f.fam)) + (ex ? ' <em class="ex">' + x.exampleImg + "</em>" : "");
-      $("prod").innerHTML = img ? '<img id="prodImg" src="img/models/' + esc(img) + '.jpg" alt="' + esc(info ? info.id : f.fam) + '"><figcaption>' + cap + (info && info.desc ? '<small class="desc">' + esc(info.desc) + "</small>" : "") + "</figcaption>"
+      $("prod").innerHTML = img ? '<img id="prodImg" src="img/models/' + esc(img) + '.jpg" alt="' + esc(info ? info.id : f.fam) + '"><figcaption>' + cap + (info && info.desc ? '<small class="desc" id="prodDesc">' + esc(descOf(info)) + "</small>" : "") + "</figcaption>"
         : '<div class="noimg">' + (f.fam ? x.noImg : "") + "</div>";
       var fn = famName(f), sn = subName(f);
       $("pathP").innerHTML = fn && d ? "📁 " + esc(OE.fs.label() + "\\" + OE.safeName(fn, true) + "\\" + d) + (sn && f.file ? "<br>📄 " + esc(OE.fs.paramName(fn, sn, f.dossier, new Date(), f.file.name)) : "") : "";
