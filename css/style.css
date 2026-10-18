@@ -163,3 +163,21 @@ h3.sub{font-size:15px;margin:16px 0 4px}
 .logo-missing .brand img{display:none}
 .logo-missing .brand{border:2px dashed #e5002b;min-width:90px;justify-content:center}
 .logo-missing .brand::after{content:"LOGO";font-size:11px;font-weight:800;color:#e5002b;letter-spacing:1px}
+/* serial/order info icon + example-photo popover */
+.lblrow{display:flex;align-items:center;gap:6px}
+.lblrow .lbl{margin-right:0}
+.info{flex:none;border:0;background:none;color:var(--a);font-size:17px;line-height:1;width:26px;height:26px;margin-top:8px;border-radius:50%;cursor:pointer;padding:0}
+.info:hover,.info:focus-visible,.info[aria-expanded=true]{background:#eef2ff;outline:2px solid #c7d2fe}
+.numtip{position:fixed;z-index:40;background:#fff;border-radius:14px;box-shadow:0 18px 44px rgba(15,23,42,.32);padding:12px;width:min(680px,calc(100vw - 16px));overflow-y:auto;border:1px solid #e2e8f0}
+.numtip[hidden]{display:none}
+.nt-h{margin:0 0 8px;font-weight:800;font-size:14px}
+.nt-g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nt-g figure{margin:0}
+.nt-g img{width:100%;max-width:320px;display:block;border-radius:8px;cursor:zoom-in;border:1px solid #e2e8f0}
+.nt-g figcaption{font-size:12.5px;color:var(--tx);margin-top:6px;line-height:1.35}
+@media (max-width:620px){.nt-g{grid-template-columns:1fr}.nt-g img{max-width:none}}
+.modal .card.big-img{max-width:min(1000px,96vw);max-height:96vh;overflow:auto;padding:12px}
+.big-img .hh{display:flex;justify-content:flex-end}
+.big-img .hx{border:0;background:#f1f5f9;color:var(--mu);font-size:22px;width:40px;height:40px;border-radius:50%;cursor:pointer}
+.big-img img{width:100%;display:block;border-radius:8px}
+.big-img .cap{font-size:15px;font-weight:600;margin:8px 0 0}

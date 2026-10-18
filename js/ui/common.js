@@ -32,7 +32,7 @@
     if (!S.lang) S.screen = "lang";
     else if (!(S.tech.first && S.tech.last) && S.screen !== "lang") S.screen = "tech";
     else if ((S.screen === "form" || S.screen === "result") && fs !== "granted") S.screen = "folder";
-    OE.hdr();
+    OE.hdr(); if (OE.hideNumTip) OE.hideNumTip();
     (OE.screens[S.screen] || OE.screens.form)();
     OE.anim(dir || 1); window.scrollTo(0, 0);
   };

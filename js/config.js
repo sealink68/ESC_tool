@@ -41,6 +41,10 @@ OE.T = {
     resOver: "Bestaand bestand met dezelfde naam werd overschreven.",
     newDev: "➕ Nieuw toestel", openPdf: "📄 Open PDF", saveErr: "Opslaan mislukt: {e}",
     settings: "⚙ Instellingen", setH: "Instellingen", setName: "Naam technieker", setFolder: "Map", setLang: "Taal",
+    numInfo: "Waar vind ik het serienummer en ordernummer?",
+    capPlate: "Nieuw typeplaatje: rood = serienummer (S/N), blauw = ordernummer",
+    capProto: "Ouder Kaba-protocol: rood = serienummer (Fabrik-Nr.), blauw = ordernummer (Auftrags-Nr.)",
+    enlarge: "Klik om te vergroten",
     edit: "Wijzigen", close: "Sluiten", yes: "Ja", no: "Nee", ok: "OK", cancel: "Annuleren", none: "—"
   },
   fr: {
@@ -72,6 +76,10 @@ OE.T = {
     resOver: "Un fichier existant portant le même nom a été remplacé.",
     newDev: "➕ Nouvel appareil", openPdf: "📄 Ouvrir le PDF", saveErr: "Échec de l'enregistrement : {e}",
     settings: "⚙ Paramètres", setH: "Paramètres", setName: "Nom du technicien", setFolder: "Dossier", setLang: "Langue",
+    numInfo: "Où trouver le numéro de série et le numéro de commande ?",
+    capPlate: "Nouvelle plaque signalétique : rouge = numéro de série (S/N), bleu = numéro de commande",
+    capProto: "Ancien protocole Kaba : rouge = numéro de série (Fabrik-Nr.), bleu = numéro de commande (Auftrags-Nr.)",
+    enlarge: "Cliquer pour agrandir",
     edit: "Modifier", close: "Fermer", yes: "Oui", no: "Non", ok: "OK", cancel: "Annuler", none: "—"
   }
 };
@@ -106,6 +114,7 @@ OE.HELP = {
     form: ["Vul de gegevens van het toestel in en kies het parameterbestand.",
       "• Familie en submodel bepalen de mapnaam en de bestandsnaam. Staat het model er niet bij? Kies ‘Ander…’.",
       "• Het dossiernummer wordt de mapnaam: spaties en tekens \\ / : * ? \" < > | worden ‘_’.",
+      "• Serienummer en ordernummer: op het typeplaatje van het toestel staat het serienummer na ‘S/N:’ en het ordernummer naast de datum. Op een ouder groen Kaba-protocol (Werkstattabnahmeprotokoll) is het serienummer de ‘Fabrik-Nr.’ en het ordernummer de ‘Auftrags-Nr.’. Zie het ⓘ-icoon naast de velden.",
       "• Bestaat het dossier al, dan kan je de gegevens laden.",
       "• Per dossier worden max. 3 parameterbestanden bewaard; het oudste wordt verwijderd (je krijgt eerst een melding).",
       "• Datum en tijd worden automatisch ingevuld."],
@@ -125,6 +134,7 @@ OE.HELP = {
     form: ["Complétez les données de l'appareil et choisissez le fichier de paramètres.",
       "• La famille et le sous-modèle déterminent le nom du dossier et du fichier. Modèle absent ? Choisissez « Autre… ».",
       "• Le numéro de dossier devient le nom du dossier : les espaces et les caractères \\ / : * ? \" < > | deviennent « _ ».",
+      "• Numéro de série et numéro de commande : sur la plaque signalétique de l'appareil, le numéro de série suit « S/N: » et le numéro de commande se trouve à côté de la date. Sur un ancien protocole Kaba vert (Werkstattabnahmeprotokoll), le numéro de série est le « Fabrik-Nr. » et le numéro de commande l'« Auftrags-Nr. ». Voir l'icône ⓘ à côté des champs.",
       "• Si le dossier existe déjà, vous pouvez charger ses données.",
       "• Au maximum 3 fichiers de paramètres sont conservés par dossier ; le plus ancien est supprimé (avec avertissement préalable).",
       "• La date et l'heure sont remplies automatiquement."],

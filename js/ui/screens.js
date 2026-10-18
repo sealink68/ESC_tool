@@ -71,6 +71,50 @@
   function famName(f) { return f.fam === C.OTHER ? f.famOther.trim() : f.fam; }
   function subName(f) { return f.sub === C.OTHER ? f.subOther.trim() : f.sub; }
   function subInfo(f) { var l = OE.MODELS[f.fam] || []; for (var i = 0; i < l.length; i++) if (l[i].id === f.sub) return l[i]; return null; }
+  function INFO(x) { return '<button type="button" class="info" aria-label="' + esc(x.numInfo) + '" aria-haspopup="true" aria-expanded="false">ⓘ</button>'; }
+  /* Popover with the two example photos (serial = red, order = blue). Hover, keyboard focus or click/tap opens it;
+     mouse leave, Escape or a click outside closes it. Kept inside the viewport. */
+  function numTip() {
+    var x = OE.t(), tip = $("numtip"), cur = null, tmr = 0;
+    if (!tip) { tip = document.createElement("div"); tip.id = "numtip"; tip.className = "numtip"; tip.setAttribute("role", "tooltip"); tip.hidden = true; document.body.appendChild(tip); }
+    tip.innerHTML = '<p class="nt-h">' + esc(x.numInfo) + '</p><div class="nt-g">' +
+      '<figure><img src="img/help/example-plate.jpg" alt="' + esc(x.capPlate) + '" title="' + esc(x.enlarge) + '"><figcaption>' + esc(x.capPlate) + "</figcaption></figure>" +
+      '<figure><img src="img/help/example-protocol.jpg" alt="' + esc(x.capProto) + '" title="' + esc(x.enlarge) + '"><figcaption>' + esc(x.capProto) + "</figcaption></figure></div>";
+    function place() {
+      if (!cur || tip.hidden) return;
+      var r = cur.getBoundingClientRect(), vw = document.documentElement.clientWidth, vh = window.innerHeight, m = 8;
+      tip.style.maxHeight = (vh - 2 * m) + "px";
+      var w = tip.offsetWidth, h = tip.offsetHeight, left = Math.min(Math.max(m, r.left + r.width / 2 - w / 2), vw - w - m);
+      var top = r.bottom + 8; if (top + h > vh - m) top = r.top - h - 8; if (top < m) top = Math.max(m, vh - h - m);
+      tip.style.left = left + "px"; tip.style.top = top + "px";
+    }
+    function show(b) { clearTimeout(tmr); if (cur && cur !== b) cur.setAttribute("aria-expanded", "false"); cur = b; tip.hidden = false; b.setAttribute("aria-expanded", "true"); place(); }
+    function hide() { clearTimeout(tmr); tip.hidden = true; if (cur) cur.setAttribute("aria-expanded", "false"); cur = null; }
+    function later() { clearTimeout(tmr); tmr = setTimeout(hide, 220); }
+    OE.hideNumTip = hide;
+    [].forEach.call(document.querySelectorAll("#card .info"), function (b) {
+      b.onmouseenter = function () { show(b); }; b.onmouseleave = later;
+      b.onfocus = function () { show(b); }; b.onblur = function (e) { if (!tip.contains(e.relatedTarget)) later(); };
+      b.onclick = function (e) { e.stopPropagation(); if (cur === b && !tip.hidden && b.dataset.clicked) { b.dataset.clicked = ""; hide(); } else { b.dataset.clicked = "1"; show(b); } };
+    });
+    tip.onmouseenter = function () { clearTimeout(tmr); }; tip.onmouseleave = later;
+    [].forEach.call(tip.querySelectorAll("img"), function (im) { im.onclick = function (e) { e.stopPropagation(); hide(); bigImg(im.src, im.alt); }; });
+    if (!OE._ntWired) {
+      OE._ntWired = true;
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && OE.hideNumTip) OE.hideNumTip(); });
+      document.addEventListener("click", function (e) { var t = $("numtip"); if (t && !t.hidden && !t.contains(e.target) && OE.hideNumTip) OE.hideNumTip(); });
+      window.addEventListener("resize", function () { if (OE.hideNumTip) OE.hideNumTip(); });
+      window.addEventListener("scroll", function () { if (OE.hideNumTip) OE.hideNumTip(); }, true);
+    }
+  }
+  function bigImg(src, cap) {
+    var m = $("modal"), x = OE.t(); m.dataset.help = "";
+    m.innerHTML = '<div class="card big-img" role="dialog" aria-modal="true"><div class="hh"><span></span><button type="button" class="hx" id="bix" aria-label="' + esc(x.close) + '">×</button></div><img src="' + esc(src) + '" alt=""><p class="cap">' + esc(cap) + "</p></div>";
+    m.hidden = false;
+    function shut() { m.hidden = true; m.onclick = null; document.removeEventListener("keydown", key); }
+    function key(e) { if (e.key === "Escape") shut(); }
+    $("bix").onclick = shut; m.onclick = function (e) { if (e.target === m) shut(); }; document.addEventListener("keydown", key);
+  }
   function descOf(m) { var d = m.desc || {}; return typeof d === "string" ? d : (d[OE.S.lang] || d.nl || d.en || ""); }
   function exampleFor(fam) { var l = OE.MODELS[fam] || []; for (var i = 0; i < l.length; i++) if (l[i].img && !l[i].example) return l[i].img; return null; }
 
@@ -82,8 +126,8 @@
       '<label class="lbl" for="sub">' + x.sub + ' *</label><select id="sub"></select><input id="subO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
       '<label class="lbl" for="dos">' + x.dossier + ' *</label><input id="dos" autocomplete="off" spellcheck="false" placeholder="' + esc(x.dossierPh) + '"><p class="hint" id="dosN"></p>' +
       '<div id="exist"></div>' +
-      '<div class="two"><div><label class="lbl" for="ser">' + x.serial + ' *</label><input id="ser" autocomplete="off" spellcheck="false"></div>' +
-      '<div><label class="lbl" for="ord">' + x.order + ' *</label><input id="ord" autocomplete="off" spellcheck="false"></div></div>' +
+      '<div class="two"><div><div class="lblrow"><label class="lbl" for="ser">' + x.serial + ' *</label>' + INFO(x) + '</div><input id="ser" autocomplete="off" spellcheck="false"></div>' +
+      '<div><div class="lblrow"><label class="lbl" for="ord">' + x.order + ' *</label>' + INFO(x) + '</div><input id="ord" autocomplete="off" spellcheck="false"></div></div>' +
       '<label class="lbl" for="file">' + x.file + ' *</label><label class="drop" id="drop"><input type="file" id="file"><span id="fileT"></span></label>' +
       '<label class="lbl">' + x.dateNow + '</label><div class="now" id="now"></div>' +
       '</div><div class="col side"><figure class="prod" id="prod"></figure><p class="hint" id="pathP"></p></div></div>' +
@@ -142,7 +186,7 @@
     dr.ondrop = function (e) { e.preventDefault(); dr.classList.remove("over"); var fl = e.dataTransfer.files; if (fl && fl[0]) { f.file = fl[0]; upd(); } };
     function tick() { if ($("now")) $("now").textContent = OE.human(new Date()); }
     tick(); clearInterval(mem.tick); mem.tick = setInterval(tick, 15000);
-    upd(); if (f.dossier && f.fam) checkExisting();
+    upd(); numTip(); if (f.dossier && f.fam) checkExisting();
     OE.bind("save", function () { save(x, f); });
   };
 
