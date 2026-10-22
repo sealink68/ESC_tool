@@ -32,9 +32,37 @@
     if (!S.lang) S.screen = "lang";
     else if (!(S.tech.first && S.tech.last) && S.screen !== "lang") S.screen = "tech";
     else if ((S.screen === "form" || S.screen === "result") && fs !== "granted") S.screen = "folder";
-    OE.hdr(); if (OE.hideNumTip) OE.hideNumTip();
+    OE.brwUI(); OE.hdr(); if (OE.hideNumTip) OE.hideNumTip();
     (OE.screens[S.screen] || OE.screens.form)();
     OE.anim(dir || 1); window.scrollTo(0, 0);
+  };
+  /* Browser check: "edge" (wipes site data on close on company laptops), "nofs" (no File System Access, e.g. Firefox),
+     "" = fine (Chrome, incl. installed app). */
+  OE.browser = function () {
+    if (typeof window.showDirectoryPicker !== "function") return "nofs";
+    var d = navigator.userAgentData, edge = !!(d && d.brands && d.brands.some(function (b) { return /Microsoft Edge/i.test(b.brand); }));
+    return edge || /\bEdg(e|A|iOS)?\//.test(navigator.userAgent) ? "edge" : "";
+  };
+  OE.brwUI = function () {
+    var el = OE.$("brw"), k = OE.browser(), S = OE.S, both = !S.lang;
+    if (!el) return;
+    if (!k || (k === "edge" && sessionStorage.getItem("esc_brw_ok"))) { el.hidden = true; el.innerHTML = ""; return; }
+    function part(L) {
+      var x = OE.T[L];
+      return "<h3>⚠️ " + x.brwH + "</h3><p>" + (k === "edge" ? x.brwEdge : x.brwNoFs) + '</p><ol class="brwSteps">' + x.brwSteps.split("\n").map(function (l) { return "<li>" + l.replace(/^\d+\.\s*/, "") + "</li>"; }).join("") + "</ol>";
+    }
+    var x = OE.T[S.lang || "nl"], t2 = both ? OE.T.fr : null;
+    el.innerHTML = (both ? part("nl") + part("fr") : part(S.lang)) + '<p class="brwUrl"><code id="brwUrl">' + OE.CFG.URL + "</code></p>" +
+      '<div class="brwB"><button type="button" class="btn pri" id="brwCopy">' + x.brwCopy + (t2 ? " / " + t2.brwCopy : "") + "</button>" +
+      (k === "edge" ? '<button type="button" class="btn sec" id="brwGo">' + x.brwGo + (t2 ? " / " + t2.brwGo : "") + "</button>" : "") + '</div><p class="hint" id="brwMsg"></p>';
+    el.hidden = false; el.dataset.kind = k;
+    OE.$("brwCopy").onclick = function () {
+      var m = OE.$("brwMsg");
+      function ok() { m.textContent = x.brwCopied; }
+      function ko() { try { var r = document.createRange(); r.selectNodeContents(OE.$("brwUrl")); var s = getSelection(); s.removeAllRanges(); s.addRange(r); if (document.execCommand("copy")) { ok(); return; } } catch (e) {} m.textContent = x.brwCopyFail; }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(OE.CFG.URL).then(ok, ko); else ko();
+    };
+    OE.bind("brwGo", function () { sessionStorage.setItem("esc_brw_ok", "1"); OE.brwUI(); });
   };
   OE.go = function (screen, dir) { OE.S.screen = screen; OE.save(); OE.render(dir); };
   OE.bind = function (id, fn) { var e = OE.$(id); if (e) e.onclick = fn; };

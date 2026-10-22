@@ -237,3 +237,4 @@ h3.sub{font-size:15px;margin:16px 0 4px}
 .latestbox small{display:block;color:var(--mu);margin-top:8px}
 .latestbox .btns{margin-top:8px}
 .who{font-size:13px;color:var(--mu);margin:-6px 0 8px}.linkb{background:none;border:0;color:var(--a);font-weight:700;cursor:pointer;padding:4px;text-decoration:underline}
+.brw{background:#fff7ed;border:2px solid #fb923c;border-radius:16px;padding:14px 18px;margin:0 auto 14px;max-width:900px;color:#7c2d12;font-size:14px}.brw h3{margin:0 0 6px;font-size:17px}.brw ol{margin:6px 0 6px 20px;padding:0}.brw code{user-select:all;background:#fff;padding:2px 6px;border-radius:6px}.brwB{display:flex;gap:10px;flex-wrap:wrap}
