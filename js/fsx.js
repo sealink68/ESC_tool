@@ -12,7 +12,10 @@
   function useHandle(h) {
     F.picked = h;
     var p = h.name.toLowerCase() === C.SUBDIR ? Promise.resolve(h) : h.getDirectoryHandle(C.SUBDIR, { create: true });
-    return p.then(function (r) { F.root = r; F.state = "granted"; return r; });
+    return p.then(function (r) {
+      F.root = r; F.state = "granted";
+      return r.getDirectoryHandle(C.PARAM_DIR, { create: true }).catch(function () {}).then(function () { return r; });
+    });
   }
   F.init = function () {
     if (!F.supported()) { F.state = "unsupported"; return Promise.resolve(F.state); }
@@ -43,6 +46,22 @@
   F.label = function () {
     if (!F.picked) return "";
     return F.picked.name.toLowerCase() === C.SUBDIR ? F.picked.name : F.picked.name + "\\" + C.SUBDIR;
+  };
+
+  /* "Laatste parameterfile ophalen": files in projecten/ESC-param (not recursive) with an allowed extension
+     (case-insensitive) changed within PARAM_MIN minutes. [{name, file, time, size}] newest first. */
+  F.recentParams = function (now) {
+    var lim = (now || Date.now()) - C.PARAM_MIN * 60000, out = [];
+    return (async function () {
+      var d = await F.root.getDirectoryHandle(C.PARAM_DIR, { create: true });
+      for await (var e of d.values()) {
+        if (e.kind !== "file" || C.PARAM_EXT.indexOf(F.extKey(e.name)) < 0) continue;
+        var f = await e.getFile();
+        if (f.lastModified >= lim) out.push({ name: e.name, file: f, time: f.lastModified, size: f.size });
+      }
+      out.sort(function (a, b) { return b.time - a.time; });
+      return out;
+    })();
   };
 
   /* ---- naming ---- */

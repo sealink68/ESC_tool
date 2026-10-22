@@ -231,6 +231,7 @@
       '<div class="two"><div><div class="lblrow"><label class="lbl" for="ser">' + x.serial + ' *</label>' + INFO(x) + '</div><input id="ser" autocomplete="off" spellcheck="false"></div>' +
       '<div><div class="lblrow"><label class="lbl" for="ord">' + x.order + ' *</label>' + INFO(x) + '</div><input id="ord" autocomplete="off" spellcheck="false"></div></div>' +
       (mem.sel ? exFilesHtml(x, mem.sel.files) : "") + '<label class="lbl" for="file">' + x.file + ' *</label><label class="drop" id="drop"><input type="file" id="file"><span id="fileT"></span></label>' +
+      '<button type="button" class="btn sec latest" id="latest">' + x.latest + '</button><div id="latestBox" class="latestbox"></div>' +
       '<label class="lbl">' + x.dateNow + '</label><div class="now" id="now"></div>' +
       '</div><div class="col side"><figure class="prod" id="prod"></figure><p class="hint" id="pathP"></p></div></div>' +
       '<div id="err"></div><div class="btns"><button class="btn pri" id="save">' + x.save + "</button></div>";
@@ -287,12 +288,41 @@
     dr.ondragover = function (e) { e.preventDefault(); dr.classList.add("over"); };
     dr.ondragleave = function () { dr.classList.remove("over"); };
     dr.ondrop = function (e) { e.preventDefault(); dr.classList.remove("over"); var fl = e.dataTransfer.files; if (fl && fl[0]) { f.file = fl[0]; upd(); } };
+    OE.bind("latest", function () { latestParam(x, function (file) { f.file = file; upd(); }); });
     function tick() { if ($("now")) $("now").textContent = OE.human(new Date()); }
     tick(); clearInterval(mem.tick); mem.tick = setInterval(tick, 15000);
     $("srchT").onclick = function () { setSearch(!mem.srchOpen); };
     upd(); numTip(); drawSearch(); scan(); if (f.dossier && f.fam && !mem.sel) checkExisting();
     OE.bind("save", function () { save(x, f); });
   };
+
+  /* ---------- "Laatste parameterfile ophalen" ---------- */
+  function kb(n) { return n < 1024 ? n + " B" : (n / 1024).toFixed(n < 10240 ? 1 : 0) + " KB"; }
+  function hm(t) { var d = new Date(t); return OE.pad(d.getHours()) + ":" + OE.pad(d.getMinutes()); }
+  function latestParam(x, use) {
+    var F = OE.fs, box = $("latestBox");
+    if (!F.picked) { OE.go("folder"); return; }
+    // permission prompt: requestPermission needs this click (user gesture), so ask first
+    var ready = F.root && F.state === "granted" ? F.ensure().then(function (ok) { return ok || F.renew().then(function () { return true; }); }) : F.renew().then(function () { return true; });
+    box.innerHTML = '<p class="hint">' + esc(x.latestBusy) + "</p>";
+    ready.then(function () { return F.recentParams(Date.now()); }).then(function (l) {
+      if (!l.length) { box.innerHTML = '<p class="hint" id="latestNone">' + esc(OE.fmt(x.latestNone, { m: C.PARAM_MIN })) + "</p>"; try { $("file").click(); } catch (e) {} return; }
+      function row(p, i) { return '<button type="button" data-li="' + i + '"><span><b>' + esc(p.name) + "</b></span><small>" + hm(p.time) + " · " + kb(p.size) + "</small></button>"; }
+      function done(p) { box.innerHTML = ""; use(p.file); }
+      if (l.length === 1) {
+        box.innerHTML = '<div class="latestone"><small>' + esc(x.latestOne) + '</small><div class="wolist" id="latestList">' + row(l[0], 0) + "</div>" +
+          '<div class="btns"><button type="button" class="small" id="latestOther">' + esc(x.latestOther) + '</button><button type="button" class="btn ok" id="latestUse">' + esc(x.latestUse) + "</button></div></div>";
+        OE.bind("latestUse", function () { done(l[0]); });
+      } else {
+        box.innerHTML = '<small>' + esc(x.latestMany) + '</small><div class="wolist" id="latestList">' + l.map(row).join("") + '</div><button type="button" class="small" id="latestOther">' + esc(x.latestOther) + "</button>";
+      }
+      [].forEach.call(box.querySelectorAll("[data-li]"), function (b) { b.onclick = function () { done(l[+b.dataset.li]); }; });
+      OE.bind("latestOther", function () { box.innerHTML = ""; $("file").click(); });
+    }).catch(function (e) {
+      if (e && e.message === "denied") { box.innerHTML = '<div class="err">' + esc(x.folderDenied) + "</div>"; return; }
+      box.innerHTML = '<div class="err">' + esc(OE.fmt(x.latestErr, { e: (e && e.message) || e })) + "</div>";
+    });
+  }
 
   /* ---------- save ---------- */
   function save(x, f) {

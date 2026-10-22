@@ -233,3 +233,6 @@ h3.sub{font-size:15px;margin:16px 0 4px}
 /* narrow screens: only the orange dot; the word "Offline" moves into the tooltip (tap/focus shows it) */
 @media (max-width:520px){.offb{width:30px;padding:0;justify-content:center}.offb #offT{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .offtip{position:fixed;top:calc(env(safe-area-inset-top) + 64px);left:12px;right:12px;width:auto;max-width:none}.offtip::before{content:attr(data-l) " – ";font-weight:800}}
+.btn.latest{width:100%;margin-top:8px;min-height:44px;font-size:14px}
+.latestbox small{display:block;color:var(--mu);margin-top:8px}
+.latestbox .btns{margin-top:8px}
