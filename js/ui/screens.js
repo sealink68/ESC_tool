@@ -29,7 +29,7 @@
     OE.bind("go", function () {
       var f = $("fn").value.replace(/\s+/g, " ").trim(), l = $("lnm").value.replace(/\s+/g, " ").trim();
       if (!f || !l) { OE.err(x.needName); return; }
-      S.tech = { first: f, last: l }; OE.save(); OE.go(first ? "folder" : "settings");
+      S.tech = { first: f, last: l }; OE.save(); var bk = OE._techBack || "settings"; OE._techBack = null; OE.go(first ? "folder" : bk);
     });
   };
 
@@ -223,6 +223,7 @@
     var x = OE.t(), f = mem.form, fams = Object.keys(OE.MODELS);
     var famOpts = '<option value="">' + x.choose + "</option>" + fams.map(function (k) { return '<option value="' + esc(k) + '">' + esc(k) + "</option>"; }).join("") + '<option value="' + C.OTHER + '">' + x.other + "</option>";
     $("card").innerHTML = '<div class="fh"><h2 class="q">' + x.formH + '</h2><button type="button" class="stog" id="srchT" aria-controls="srch" aria-expanded="false" title="' + esc(x.srchH) + '" aria-label="' + esc(x.srchH) + '">🔍<span class="stl">' + esc(x.srchH) + "</span></button></div>" +
+      '<p class="who" id="who">👤 ' + esc(x.whoTech) + ': <b id="whoName">' + esc(OE.S.tech.first + " " + OE.S.tech.last) + '</b> <button type="button" class="linkb" id="whoEdit">' + esc(x.whoChange) + '</button></p>' +
       '<div class="dselbox" id="dselBox"></div><div class="srch" id="srch" hidden></div><div class="grid"><div class="col">' +
       '<label class="lbl" for="fam">' + x.family + ' *</label><select id="fam">' + famOpts + '</select><input id="famO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
       '<label class="lbl" for="sub">' + x.sub + ' *</label><select id="sub"></select><input id="subO" class="oth" placeholder="' + esc(x.otherPh) + '" hidden>' +
@@ -288,6 +289,7 @@
     dr.ondragover = function (e) { e.preventDefault(); dr.classList.add("over"); };
     dr.ondragleave = function () { dr.classList.remove("over"); };
     dr.ondrop = function (e) { e.preventDefault(); dr.classList.remove("over"); var fl = e.dataTransfer.files; if (fl && fl[0]) { f.file = fl[0]; upd(); } };
+    OE.bind("whoEdit", function () { OE._techBack = "form"; OE.go("tech"); });
     OE.bind("latest", function () { latestParam(x, function (file) { f.file = file; upd(); }); });
     function tick() { if ($("now")) $("now").textContent = OE.human(new Date()); }
     tick(); clearInterval(mem.tick); mem.tick = setInterval(tick, 15000);
