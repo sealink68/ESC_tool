@@ -2,7 +2,7 @@
 
 Static web app for dormakaba technicians (security entrances / access control: sensor barriers, turnstiles,
 revolving doors, interlocks). It saves a device's parameter file plus a bilingual (NL/FR) info PDF straight into
-the OneDrive-synced folder `ESC-Share\projecten` on the Windows laptop.
+the OneDrive-synced folder `ESC_Share\projecten` on the Windows laptop.
 
 Live (GitHub Pages): https://sealink68.github.io/ESC_tool/
 
@@ -13,7 +13,7 @@ Live (GitHub Pages): https://sealink68.github.io/ESC_tool/
 
 ## Flow
 1. First start: language (NL/FR), then the technician's first and last name (localStorage; change via ⚙).
-2. Once: pick the folder `ESC-Share` (its `projecten` subfolder is used/created) or `projecten` directly.
+2. Once: pick the folder `ESC_Share` (its `projecten` subfolder is used/created) or `projecten` directly.
    The handle is kept in IndexedDB. After a browser restart, click **Toegang tot map hernieuwen / Renouveler l'accès au dossier**.
 3. Form: device family + sub-model (with *Ander… / Autre…* free text), Dossiernummer (ServiceMax), Serienummer,
    Ordernummer, the parameter file (click or drag & drop). Date/time are automatic.

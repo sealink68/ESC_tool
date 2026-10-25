@@ -8,7 +8,7 @@
     var o = { mode: "readwrite" };
     return h.queryPermission(o).then(function (p) { return p === "granted" || !ask ? p : h.requestPermission(o); });
   }
-  /* ESC-Share -> its "projecten" subfolder (created if missing); a folder already named "projecten" is used as is. */
+  /* ESC_Share -> its "projecten" subfolder (created if missing); a folder already named "projecten" is used as is. */
   function useHandle(h) {
     F.picked = h;
     var p = h.name.toLowerCase() === C.SUBDIR ? Promise.resolve(h) : h.getDirectoryHandle(C.SUBDIR, { create: true });
